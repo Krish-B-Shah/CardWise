@@ -1,0 +1,28 @@
+{
+  "name": "cardwise-monorepo",
+  "version": "1.0.0",
+  "description": "CardWise - Smart Credit Card Recommendation Extension & Rewards Dashboard",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "dashboard",
+    "extension"
+  ],
+  "scripts": {
+    "start:backend": "npm --workspace=backend run dev",
+    "start:dashboard": "npm --workspace=dashboard run dev",
+    "build:extension": "npm --workspace=extension run build",
+    "test:backend": "npm --workspace=backend test",
+    "test:extension": "npm --workspace=extension test",
+    "test": "npm run test:backend && npm run test:extension"
+  },
+  "keywords": [
+    "cardwise",
+    "chrome-extension",
+    "credit-cards",
+    "rewards-optimizer",
+    "checkout-recommendations"
+  ],
+  "author": "CardWise Team",
+  "license": "MIT"
+}

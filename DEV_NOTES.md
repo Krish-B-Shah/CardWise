@@ -17,3 +17,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-02-23**: style(extension): improve active tab highlight animation in popup navigation
 - **2026-02-24**: feat(dashboard): add toast alert notifications on transaction and card updates
 - **2026-02-25**: refactor(backend): streamline fallback heuristics for unlisted merchant domains
+- **2026-02-25**: test(extension): verify Best Buy automation ID extraction with dynamic cart updates

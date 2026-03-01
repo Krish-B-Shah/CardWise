@@ -22,3 +22,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-02-26**: style(dashboard): improve badge contrast and pill colors in transactions table
 - **2026-02-27**: fix(extension): preserve manual amount override when user enters custom value
 - **2026-02-28**: docs: add developer guide for contributing new merchant adapters
+- **2026-03-01**: chore(dashboard): update vite build chunking configuration

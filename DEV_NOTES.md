@@ -25,3 +25,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-03-01**: chore(dashboard): update vite build chunking configuration
 - **2026-03-03**: refactor(extension): extract common regex patterns into base adapter constants
 - **2026-03-03**: style(extension): add subtle slide-in transition for checkout recommendation panel
+- **2026-03-04**: perf(backend): cache merchant domain lookups in memory pool

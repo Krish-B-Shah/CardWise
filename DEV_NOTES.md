@@ -29,3 +29,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-03-05**: docs: update API documentation for /api/recommend endpoint
 - **2026-03-06**: refactor(backend): optimize card ranking query and add secondary credit limit tiebreaker
 - **2026-03-07**: style(extension): adjust shadow DOM panel box shadow and contrast for dark mode
+- **2026-03-09**: fix(extension): sanitize currency text when raw subtotal includes trailing currency symbols

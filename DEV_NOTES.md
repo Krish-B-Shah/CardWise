@@ -33,3 +33,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-03-11**: docs: document merchant adapter detection flow and security guarantees
 - **2026-03-12**: refactor(dashboard): improve responsive layout grid on smaller laptop displays
 - **2026-03-16**: perf(extension): fine-tune mutation observer debounce interval to reduce CPU cycles
+- **2026-03-18**: test(backend): add test cases for multi-category cashback cap boundaries

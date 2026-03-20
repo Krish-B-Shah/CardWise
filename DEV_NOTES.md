@@ -35,3 +35,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-03-16**: perf(extension): fine-tune mutation observer debounce interval to reduce CPU cycles
 - **2026-03-18**: test(backend): add test cases for multi-category cashback cap boundaries
 - **2026-03-19**: style(dashboard): refine credit card canvas chip gradient and typography spacing
+- **2026-03-20**: fix(extension): ensure shadow container cleans up correctly on SPA route exit

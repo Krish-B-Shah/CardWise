@@ -39,3 +39,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-03-20**: refactor(extension): strengthen runtime message validation guards against unexpected types
 - **2026-03-22**: docs: add visual diagrams to README for checkout panel injection lifecycle
 - **2026-03-23**: chore(backend): add error logging on unhandled route exceptions
+- **2026-03-24**: style(extension): improve active tab highlight animation in popup navigation

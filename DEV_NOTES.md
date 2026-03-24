@@ -41,3 +41,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-03-23**: chore(backend): add error logging on unhandled route exceptions
 - **2026-03-24**: style(extension): improve active tab highlight animation in popup navigation
 - **2026-03-24**: feat(dashboard): add toast alert notifications on transaction and card updates
+- **2026-03-24**: refactor(backend): streamline fallback heuristics for unlisted merchant domains

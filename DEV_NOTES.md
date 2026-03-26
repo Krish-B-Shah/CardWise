@@ -43,3 +43,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-03-24**: feat(dashboard): add toast alert notifications on transaction and card updates
 - **2026-03-24**: refactor(backend): streamline fallback heuristics for unlisted merchant domains
 - **2026-03-26**: test(extension): verify Best Buy automation ID extraction with dynamic cart updates
+- **2026-03-26**: perf(dashboard): optimize re-render cycles in card manager component

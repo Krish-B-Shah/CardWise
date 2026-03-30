@@ -46,3 +46,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-03-26**: perf(dashboard): optimize re-render cycles in card manager component
 - **2026-03-27**: style(dashboard): improve badge contrast and pill colors in transactions table
 - **2026-03-30**: fix(extension): preserve manual amount override when user enters custom value
+- **2026-03-30**: docs: add developer guide for contributing new merchant adapters

@@ -51,3 +51,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-03-31**: refactor(extension): extract common regex patterns into base adapter constants
 - **2026-04-02**: style(extension): add subtle slide-in transition for checkout recommendation panel
 - **2026-04-02**: perf(backend): cache merchant domain lookups in memory pool
+- **2026-04-03**: docs: update API documentation for /api/recommend endpoint

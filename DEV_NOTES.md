@@ -62,3 +62,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-04-13**: style(dashboard): refine credit card canvas chip gradient and typography spacing
 - **2026-04-13**: fix(extension): ensure shadow container cleans up correctly on SPA route exit
 - **2026-04-14**: refactor(extension): strengthen runtime message validation guards against unexpected types
+- **2026-04-14**: docs: add visual diagrams to README for checkout panel injection lifecycle

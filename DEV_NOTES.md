@@ -65,3 +65,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-04-14**: docs: add visual diagrams to README for checkout panel injection lifecycle
 - **2026-04-17**: chore(backend): add error logging on unhandled route exceptions
 - **2026-04-17**: style(extension): improve active tab highlight animation in popup navigation
+- **2026-04-18**: feat(dashboard): add toast alert notifications on transaction and card updates

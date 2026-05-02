@@ -78,3 +78,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-04-29**: perf(backend): cache merchant domain lookups in memory pool
 - **2026-04-29**: docs: update API documentation for /api/recommend endpoint
 - **2026-05-01**: refactor(backend): optimize card ranking query and add secondary credit limit tiebreaker
+- **2026-05-02**: style(extension): adjust shadow DOM panel box shadow and contrast for dark mode

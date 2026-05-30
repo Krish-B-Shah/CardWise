@@ -98,3 +98,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-05-28**: fix(extension): preserve manual amount override when user enters custom value
 - **2026-05-28**: docs: add developer guide for contributing new merchant adapters
 - **2026-05-28**: chore(dashboard): update vite build chunking configuration
+- **2026-05-30**: refactor(extension): extract common regex patterns into base adapter constants

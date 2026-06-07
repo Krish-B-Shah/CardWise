@@ -107,3 +107,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-06-05**: fix(extension): sanitize currency text when raw subtotal includes trailing currency symbols
 - **2026-06-05**: docs: document merchant adapter detection flow and security guarantees
 - **2026-06-06**: refactor(dashboard): improve responsive layout grid on smaller laptop displays
+- **2026-06-07**: perf(extension): fine-tune mutation observer debounce interval to reduce CPU cycles

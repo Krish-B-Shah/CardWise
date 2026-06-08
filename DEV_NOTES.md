@@ -109,3 +109,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-06-06**: refactor(dashboard): improve responsive layout grid on smaller laptop displays
 - **2026-06-07**: perf(extension): fine-tune mutation observer debounce interval to reduce CPU cycles
 - **2026-06-08**: test(backend): add test cases for multi-category cashback cap boundaries
+- **2026-06-08**: style(dashboard): refine credit card canvas chip gradient and typography spacing

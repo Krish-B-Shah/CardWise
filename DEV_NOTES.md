@@ -111,3 +111,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-06-08**: test(backend): add test cases for multi-category cashback cap boundaries
 - **2026-06-08**: style(dashboard): refine credit card canvas chip gradient and typography spacing
 - **2026-06-09**: fix(extension): ensure shadow container cleans up correctly on SPA route exit
+- **2026-06-10**: refactor(extension): strengthen runtime message validation guards against unexpected types

@@ -113,3 +113,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-06-09**: fix(extension): ensure shadow container cleans up correctly on SPA route exit
 - **2026-06-10**: refactor(extension): strengthen runtime message validation guards against unexpected types
 - **2026-06-11**: docs: add visual diagrams to README for checkout panel injection lifecycle
+- **2026-06-11**: chore(backend): add error logging on unhandled route exceptions

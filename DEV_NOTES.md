@@ -120,3 +120,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-06-13**: test(extension): verify Best Buy automation ID extraction with dynamic cart updates
 - **2026-06-15**: perf(dashboard): optimize re-render cycles in card manager component
 - **2026-06-16**: style(dashboard): improve badge contrast and pill colors in transactions table
+- **2026-06-16**: fix(extension): preserve manual amount override when user enters custom value

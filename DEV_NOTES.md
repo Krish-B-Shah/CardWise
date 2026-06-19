@@ -124,3 +124,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-06-18**: docs: add developer guide for contributing new merchant adapters
 - **2026-06-18**: chore(dashboard): update vite build chunking configuration
 - **2026-06-18**: refactor(extension): extract common regex patterns into base adapter constants
+- **2026-06-19**: style(extension): add subtle slide-in transition for checkout recommendation panel

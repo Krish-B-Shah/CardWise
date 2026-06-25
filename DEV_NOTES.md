@@ -131,3 +131,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-06-23**: style(extension): adjust shadow DOM panel box shadow and contrast for dark mode
 - **2026-06-24**: fix(extension): sanitize currency text when raw subtotal includes trailing currency symbols
 - **2026-06-24**: docs: document merchant adapter detection flow and security guarantees
+- **2026-06-25**: refactor(dashboard): improve responsive layout grid on smaller laptop displays

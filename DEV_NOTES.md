@@ -180,3 +180,4 @@ Tracking milestone iterations and engineering updates.
 - **2026-08-15**: refactor(backend): optimize card ranking query and add secondary credit limit tiebreaker
 - **2026-08-16**: style(extension): adjust shadow DOM panel box shadow and contrast for dark mode
 - **2026-08-18**: fix(extension): sanitize currency text when raw subtotal includes trailing currency symbols
+- **2026-08-19**: docs: document merchant adapter detection flow and security guarantees

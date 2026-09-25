@@ -8,19 +8,29 @@ export interface DbClient {
 }
 
 let dbInstance: DbClient | null = null;
+let closeConnection: (() => Promise<void>) | null = null;
+
+export async function closeDb(): Promise<void> {
+  if (closeConnection) await closeConnection();
+  closeConnection = null;
+  dbInstance = null;
+}
 
 export async function getDb(): Promise<DbClient> {
   if (dbInstance) {
     return dbInstance;
   }
 
-  const databaseUrl = process.env.DATABASE_URL;
+  // Automated checks must never connect to or mutate the saved demo database.
+  const isTest = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST);
+  const databaseUrl = isTest ? undefined : process.env.DATABASE_URL;
 
   if (databaseUrl) {
     try {
       console.log('[DB] Connecting to PostgreSQL via DATABASE_URL...');
       const pool = new pg.Pool({ connectionString: databaseUrl });
       await pool.query('SELECT 1');
+      closeConnection = () => pool.end();
       console.log('[DB] Connected to PostgreSQL server.');
       
       dbInstance = {
@@ -37,20 +47,27 @@ export async function getDb(): Promise<DbClient> {
   }
 
   // Use embedded PostgreSQL (PGlite)
-  const isTest = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST);
   let pglite: PGlite;
   if (isTest) {
     console.log('[DB] Initializing in-memory embedded PostgreSQL (PGlite) for tests...');
     pglite = new PGlite();
   } else {
-    const dataDir = path.resolve(__dirname, '../../data/cardwise-pg');
+    const dataDir = process.env.PGLITE_DATA_DIR
+      ? path.resolve(process.env.PGLITE_DATA_DIR)
+      : path.resolve(__dirname, '../../data/cardwise-pg');
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
     console.log(`[DB] Initializing embedded PostgreSQL (PGlite) at ${dataDir}...`);
     pglite = new PGlite(dataDir);
   }
-  await pglite.waitReady;
+  try {
+    await pglite.waitReady;
+  } catch (error) {
+    if (!isTest) throw new Error(`Embedded database could not open. Existing files have not been reset. For a separate demo database using the existing fixtures, run "npm --workspace=backend run start:demo". Original error: ${String(error)}`);
+    throw error;
+  }
+  closeConnection = () => pglite.close();
   console.log('[DB] Embedded PostgreSQL ready.');
 
   dbInstance = {
@@ -283,10 +300,10 @@ async function seedDemoData(db: DbClient) {
       category: 'retail',
       amount: 88.50,
       card_used_id: 'card-amex-blue-cash',
-      reward_earned: 2.66,
-      optimal_card_id: 'card-amex-blue-cash',
-      optimal_reward: 2.66,
-      reward_gap: 0.00,
+      reward_earned: 0.89,
+      optimal_card_id: 'card-chase-freedom',
+      optimal_reward: 1.33,
+      reward_gap: 0.44,
       date: new Date(Date.now() - 9 * 24 * 3600 * 1000).toISOString()
     },
     {

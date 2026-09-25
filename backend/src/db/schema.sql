@@ -71,3 +71,9 @@ CREATE TABLE IF NOT EXISTS recommendation_logs (
     cashback_amount NUMERIC(10, 2) NOT NULL,
     timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Indexes follow the current portfolio, rule lookup and chronological read paths.
+CREATE INDEX IF NOT EXISTS cards_user_active_idx ON cards (user_id, is_active);
+CREATE INDEX IF NOT EXISTS reward_rules_card_idx ON reward_rules (card_id);
+CREATE INDEX IF NOT EXISTS transactions_user_date_idx ON transactions (user_id, date DESC);
+CREATE INDEX IF NOT EXISTS recommendation_logs_timestamp_idx ON recommendation_logs (timestamp DESC);

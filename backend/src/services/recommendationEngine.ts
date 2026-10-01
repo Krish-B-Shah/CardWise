@@ -1,10 +1,15 @@
 import { DbClient } from '../db/index.js';
+import { MODEL_LIMITATIONS, selectRewardRule } from './rewardRules.js';
 
 export interface RecommendationRequest {
   domain: string;
   category?: string;
   amount: number;
   userId?: string;
+}
+
+export class NoActiveCardsError extends Error {
+  constructor() { super('No active cards configured. Add a card before requesting an estimate.'); }
 }
 
 export interface CardRecommendationResult {
@@ -47,8 +52,9 @@ export async function calculateRecommendation(
   req: RecommendationRequest
 ): Promise<CardRecommendationResult> {
   const userId = req.userId || 'demo-user-1';
-  const amount = Number(req.amount) > 0 ? Number(req.amount) : 0;
-  const rawDomain = req.domain.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split(':')[0];
+  if (!Number.isFinite(req.amount) || req.amount < 0) throw new Error('Amount must be a finite nonnegative number');
+  const amount = req.amount;
+  const rawDomain = new URL(req.domain.includes('://') ? req.domain : `https://${req.domain}`).hostname.toLowerCase().replace(/^www\./, '');
 
   // 1. Merchant lookup
   let merchantCategory = req.category || 'general';
@@ -63,18 +69,6 @@ export async function calculateRecommendation(
     merchantName = merchantRes.rows[0].name;
     if (!req.category) {
       merchantCategory = merchantRes.rows[0].category;
-    }
-  } else {
-    // Basic domain heuristics if merchant is not yet in registry
-    if (rawDomain.includes('amazon') || rawDomain.includes('ebay') || rawDomain.includes('etsy')) {
-      merchantCategory = 'online_shopping';
-      merchantName = 'Online Retailer';
-    } else if (rawDomain.includes('bestbuy') || rawDomain.includes('newegg') || rawDomain.includes('microcenter')) {
-      merchantCategory = 'electronics';
-      merchantName = 'Electronics Merchant';
-    } else if (rawDomain.includes('target') || rawDomain.includes('walmart')) {
-      merchantCategory = 'retail';
-      merchantName = 'Department Store';
     }
   }
 
@@ -95,7 +89,7 @@ export async function calculateRecommendation(
   );
 
   if (cardsRes.rows.length === 0) {
-    throw new Error('No active cards found for this profile');
+    throw new NoActiveCardsError();
   }
 
   // Group rules by card
@@ -111,21 +105,9 @@ export async function calculateRecommendation(
   const scoredCards = cardsRes.rows.map(card => {
     const rules = rulesByCard.get(card.id) || [];
     
-    // Find category-specific rule first, otherwise general rule, otherwise 1% default
-    let matchingRule = rules.find(r => r.category.toLowerCase() === merchantCategory.toLowerCase());
-    
-    // Special check for merchant domain (e.g. Amazon-specific rule on Prime Visa)
-    if (rawDomain.includes('amazon') && card.id === 'card-prime-visa') {
-      const amazonRule = rules.find(r => r.category === 'online_shopping');
-      if (amazonRule) matchingRule = amazonRule;
-    }
-
-    if (!matchingRule) {
-      matchingRule = rules.find(r => r.category.toLowerCase() === 'general');
-    }
-
-    const rate = matchingRule ? Number(matchingRule.reward_rate) : 0.01;
-    const desc = matchingRule ? matchingRule.description : '1% standard cashback rate';
+    const matchingRule = selectRewardRule(rules, merchantCategory);
+    const rate = matchingRule ? Number(matchingRule.reward_rate) : 0;
+    const desc = matchingRule?.description || (matchingRule ? 'Configured cashback rate' : 'No matching reward rule configured (0% estimate)');
     const estimatedCashback = Math.round(amount * rate * 100) / 100;
 
     return {
@@ -156,11 +138,11 @@ export async function calculateRecommendation(
   const baselineCashback = Math.round(amount * 0.01 * 100) / 100;
   const savingsVsBaseline = Math.max(0, Math.round((best.estimatedCashback - baselineCashback) * 100) / 100);
 
-  const explanation = `${best.name} (${best.bank}) is your best choice, offering ${best.cashbackPercentage} return ($${best.estimatedCashback.toFixed(2)}) on ${merchantName} (${merchantCategory}).${
+  const explanation = `${best.name} (${best.bank}) has the highest configured rate: ${best.cashbackPercentage} ($${best.estimatedCashback.toFixed(2)}) on ${merchantName} (${merchantCategory}). ${MODEL_LIMITATIONS}${
     savingsVsBaseline > 0 ? ` That is $${savingsVsBaseline.toFixed(2)} more than a basic 1% card.` : ''
   }`;
 
-  // Log recommendation asynchronously for telemetry/dashboard history
+  // Record model queries, including calculators and manually logged transactions.
   try {
     const logId = `rec-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     await db.query(

@@ -1,7 +1,10 @@
 import { Router } from 'express';
-import { z } from 'zod';
+import { createCardSchema, rewardRuleSchema, recommendSchema, transactionSchema } from '../contracts.js';
+import { ApiError, sendApiError } from '../http/errors.js';
+import { createCardWithDefaultRule } from '../services/cardService.js';
 import { getDb } from '../db/index.js';
 import { calculateRecommendation } from '../services/recommendationEngine.js';
+import { selectRewardRule } from '../services/rewardRules.js';
 
 export const apiRouter = Router();
 
@@ -11,11 +14,11 @@ apiRouter.get('/profile', async (_req, res) => {
     const db = await getDb();
     const result = await db.query("SELECT * FROM profiles WHERE id = 'demo-user-1'");
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Profile not found' });
+      throw new ApiError(404, 'NOT_FOUND', 'Profile not found');
     }
     return res.json(result.rows[0]);
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
@@ -45,55 +48,20 @@ apiRouter.get('/cards', async (_req, res) => {
     }));
 
     return res.json(cards);
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
-const createCardSchema = z.object({
-  name: z.string().min(1).max(128),
-  bank: z.string().min(1).max(64),
-  network: z.string().min(1).max(32),
-  color_gradient: z.string().min(1).max(128).default('linear-gradient(135deg, #2563eb, #1e40af)'),
-  last_four: z.string().length(4),
-  annual_fee: z.number().nonnegative().default(0),
-  credit_limit: z.number().positive().default(5000),
-  notes: z.string().optional()
-});
 
 apiRouter.post('/cards', async (req, res) => {
   try {
     const parsed = createCardSchema.parse(req.body);
     const db = await getDb();
-    const id = `card-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-
-    await db.query(
-      `INSERT INTO cards (id, user_id, name, bank, network, color_gradient, last_four, annual_fee, credit_limit, notes)
-       VALUES ($1, 'demo-user-1', $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [
-        id,
-        parsed.name,
-        parsed.bank,
-        parsed.network,
-        parsed.color_gradient,
-        parsed.last_four,
-        parsed.annual_fee,
-        parsed.credit_limit,
-        parsed.notes || ''
-      ]
-    );
-
-    // Add default general reward rule for this card
-    await db.query(
-      `INSERT INTO reward_rules (id, card_id, category, reward_rate, description)
-       VALUES ($1, $2, 'general', 0.015, '1.5% base reward rate')`,
-      [`rule-${id}-gen`, id]
-    );
-
-    const created = await db.query('SELECT * FROM cards WHERE id = $1', [id]);
-    return res.status(201).json(created.rows[0]);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+    const created = await createCardWithDefaultRule(db, parsed);
+    return res.status(201).json(created);
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
@@ -105,7 +73,7 @@ apiRouter.put('/cards/:id', async (req, res) => {
 
     const existing = await db.query('SELECT * FROM cards WHERE id = $1', [id]);
     if (existing.rows.length === 0) {
-      return res.status(404).json({ error: 'Card not found' });
+      throw new ApiError(404, 'NOT_FOUND', 'Card not found');
     }
 
     const card = existing.rows[0];
@@ -128,8 +96,8 @@ apiRouter.put('/cards/:id', async (req, res) => {
 
     const updated = await db.query('SELECT * FROM cards WHERE id = $1', [id]);
     return res.json(updated.rows[0]);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
@@ -137,10 +105,11 @@ apiRouter.delete('/cards/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const db = await getDb();
-    await db.query('DELETE FROM cards WHERE id = $1', [id]);
+    const deleted = await db.query('DELETE FROM cards WHERE id = $1 RETURNING id', [id]);
+    if (!deleted.rows.length) throw new ApiError(404, 'NOT_FOUND', 'Card not found');
     return res.json({ success: true });
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
@@ -161,18 +130,11 @@ apiRouter.get('/rewards', async (_req, res) => {
         cap_amount: r.cap_amount ? Number(r.cap_amount) : null
       }))
     );
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
-const rewardRuleSchema = z.object({
-  card_id: z.string().min(1),
-  category: z.string().min(1),
-  reward_rate: z.number().min(0.001).max(1.0),
-  cap_amount: z.number().nullable().optional(),
-  description: z.string().optional()
-});
 
 apiRouter.post('/rewards', async (req, res) => {
   try {
@@ -188,8 +150,8 @@ apiRouter.post('/rewards', async (req, res) => {
 
     const created = await db.query('SELECT * FROM reward_rules WHERE id = $1', [id]);
     return res.status(201).json(created.rows[0]);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
@@ -197,10 +159,11 @@ apiRouter.delete('/rewards/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const db = await getDb();
-    await db.query('DELETE FROM reward_rules WHERE id = $1', [id]);
+    const deleted = await db.query('DELETE FROM reward_rules WHERE id = $1 RETURNING id', [id]);
+    if (!deleted.rows.length) throw new ApiError(404, 'NOT_FOUND', 'Reward rule not found');
     return res.json({ success: true });
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
@@ -210,21 +173,14 @@ apiRouter.get('/merchants', async (_req, res) => {
     const db = await getDb();
     const result = await db.query('SELECT * FROM merchants ORDER BY name ASC');
     return res.json(result.rows);
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
 // Strictly-validated recommendation endpoint
 // "Send only the merchant category, normalized domain, and purchase amount to the recommendation service.
 // Never inspect payment fields, credit card numbers, CVVs, passwords, or other sensitive checkout information."
-const recommendSchema = z
-  .object({
-    domain: z.string().min(1),
-    category: z.string().optional(),
-    amount: z.number().min(0)
-  })
-  .strict(); // Rejects any unexpected or sensitive keys
 
 apiRouter.post('/recommend', async (req, res) => {
   try {
@@ -232,8 +188,8 @@ apiRouter.post('/recommend', async (req, res) => {
     const db = await getDb();
     const rec = await calculateRecommendation(db, validated);
     return res.json(rec);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
@@ -257,18 +213,11 @@ apiRouter.get('/transactions', async (_req, res) => {
         reward_gap: Number(t.reward_gap)
       }))
     );
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
-const transactionSchema = z.object({
-  merchant_name: z.string().min(1),
-  merchant_domain: z.string().optional(),
-  category: z.string().min(1),
-  amount: z.number().positive(),
-  card_used_id: z.string().min(1)
-});
 
 apiRouter.post('/transactions', async (req, res) => {
   try {
@@ -284,10 +233,11 @@ apiRouter.post('/transactions', async (req, res) => {
 
     // Compute reward earned with card used
     const cardUsedRules = await db.query(
-      `SELECT reward_rate FROM reward_rules WHERE card_id = $1 AND (category = $2 OR category = 'general') ORDER BY reward_rate DESC LIMIT 1`,
-      [parsed.card_used_id, parsed.category]
+      `SELECT id, category, reward_rate FROM reward_rules WHERE card_id = $1`,
+      [parsed.card_used_id]
     );
-    const cardUsedRate = cardUsedRules.rows.length > 0 ? Number(cardUsedRules.rows[0].reward_rate) : 0.01;
+    const usedRule = selectRewardRule(cardUsedRules.rows, rec.merchant.category);
+    const cardUsedRate = usedRule ? Number(usedRule.reward_rate) : 0;
     const rewardEarned = Math.round(parsed.amount * cardUsedRate * 100) / 100;
     const optimalReward = rec.bestCard.estimatedCashback;
     const rewardGap = Math.max(0, Math.round((optimalReward - rewardEarned) * 100) / 100);
@@ -312,8 +262,8 @@ apiRouter.post('/transactions', async (req, res) => {
 
     const created = await db.query('SELECT * FROM transactions WHERE id = $1', [id]);
     return res.status(201).json(created.rows[0]);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
@@ -404,12 +354,17 @@ apiRouter.get('/analytics', async (_req, res) => {
         cashback_amount: Number(l.cashback_amount)
       }))
     });
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+  } catch (err) {
+    return sendApiError(res, err);
   }
 });
 
 // Health check
 apiRouter.get('/health', async (_req, res) => {
-  return res.json({ status: 'healthy', version: '1.0.0', timestamp: new Date().toISOString() });
+  try {
+    await (await getDb()).query('SELECT 1');
+    return res.json({ status: 'ready', database: 'reachable', version: '1.0.0', timestamp: new Date().toISOString() });
+  } catch {
+    return sendApiError(res, new ApiError(503, 'NOT_READY', 'Database is unavailable.'));
+  }
 });

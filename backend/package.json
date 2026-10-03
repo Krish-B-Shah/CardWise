@@ -5,9 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc && node scripts/copy-schema.cjs",
     "start": "node dist/index.js",
-    "test": "vitest run"
+    "start:demo": "node scripts/start-demo.cjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.2.14",

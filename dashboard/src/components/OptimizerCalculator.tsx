@@ -8,15 +8,18 @@ export const OptimizerCalculator: React.FC = () => {
   const [category, setCategory] = useState('online_shopping');
   const [amount, setAmount] = useState<number>(249.99);
   const [result, setResult] = useState<RecommendationResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const calculate = async () => {
     setLoading(true);
+    setError(null);
+    setResult(null);
     try {
       const rec = await api.getRecommendation(domain, amount, category);
       setResult(rec);
     } catch (err) {
-      console.error(err);
+      setError(err instanceof Error ? err.message : 'Recommendation unavailable. Please retry.');
     } finally {
       setLoading(false);
     }
@@ -40,7 +43,7 @@ export const OptimizerCalculator: React.FC = () => {
       {/* Header */}
       <div>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-          Rewards Opportunity Optimizer
+          Check a purchase
         </h2>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '3px 0 0 0' }}>
           Simulate purchase amounts to identify your highest-earning credit card before checking out
@@ -50,7 +53,7 @@ export const OptimizerCalculator: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(340px, 1fr) minmax(380px, 1.25fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
           gap: 20
         }}
       >
@@ -160,6 +163,7 @@ export const OptimizerCalculator: React.FC = () => {
 
         {/* Right Column: Recommendation Intelligence Result */}
         <div className="fintech-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          {error && <p role="alert" style={{ color: 'var(--status-danger)' }}>{error} Use Calculate to retry.</p>}
           {result ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
               {/* Header result row */}

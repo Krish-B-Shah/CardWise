@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, Database } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 interface TopHeaderProps {
   title: string;
@@ -38,26 +38,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {/* PostgreSQL status chip */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '5px 10px',
-            background: 'var(--bg-surface-subtle)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: 11,
-            fontWeight: 500,
-            color: 'var(--text-secondary)'
-          }}
-        >
-          <Database size={12} color="var(--emerald-500)" />
-          <span>PostgreSQL Active</span>
-        </div>
-
-        {/* Refresh button */}
+        {/* Refresh dashboard data */}
         <button
           onClick={onRefresh}
           disabled={refreshing}

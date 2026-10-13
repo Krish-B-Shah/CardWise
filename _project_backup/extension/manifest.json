@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "CardWise — Smart Checkout Recommendations",
+  "version": "1.0.0",
+  "description": "Contextual credit card rewards optimizer & checkout recommendation assistant.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "optional_host_permissions": [
+    "*://*.amazon.com/*",
+    "*://*.bestbuy.com/*",
+    "*://*.target.com/*",
+    "*://*.walmart.com/*"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.amazon.com/cart*",
+        "*://*.amazon.com/gp/cart*",
+        "*://*.amazon.com/gp/buy*",
+        "*://*.amazon.com/checkout*",
+        "*://*.bestbuy.com/cart*",
+        "*://*.bestbuy.com/checkout*",
+        "*://*.target.com/cart*",
+        "*://*.target.com/checkout*",
+        "*://*.walmart.com/cart*",
+        "*://*.walmart.com/checkout*",
+        "http://localhost:3001/demo-store*",
+        "http://localhost:5173/*",
+        "http://127.0.0.1:3001/demo-store*"
+      ],
+      "js": ["contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "CardWise Rewards Assistant"
+  }
+}

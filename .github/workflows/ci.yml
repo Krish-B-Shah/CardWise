@@ -31,4 +31,4 @@ jobs:
         run: npm run build:extension
 
       - name: Build React Dashboard
-        run: npm run start:dashboard -- --dry-run || npm --workspace=dashboard run build
+        run: npm --workspace=dashboard run build

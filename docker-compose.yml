@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cardwise-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cardwise_user
+      POSTGRES_PASSWORD: cardwise_password
+      POSTGRES_DB: cardwise_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - cardwise_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cardwise_user -d cardwise_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: cardwise-backend
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      DATABASE_URL: postgresql://cardwise_user:cardwise_password@postgres:5432/cardwise_db
+      DASHBOARD_URL: http://localhost:5173
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  cardwise_pgdata:
+    driver: local

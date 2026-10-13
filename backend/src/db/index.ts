@@ -37,13 +37,19 @@ export async function getDb(): Promise<DbClient> {
   }
 
   // Use embedded PostgreSQL (PGlite)
-  const dataDir = path.resolve(__dirname, '../../data/cardwise-pg');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
+  const isTest = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST);
+  let pglite: PGlite;
+  if (isTest) {
+    console.log('[DB] Initializing in-memory embedded PostgreSQL (PGlite) for tests...');
+    pglite = new PGlite();
+  } else {
+    const dataDir = path.resolve(__dirname, '../../data/cardwise-pg');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    console.log(`[DB] Initializing embedded PostgreSQL (PGlite) at ${dataDir}...`);
+    pglite = new PGlite(dataDir);
   }
-
-  console.log(`[DB] Initializing embedded PostgreSQL (PGlite) at ${dataDir}...`);
-  const pglite = new PGlite(dataDir);
   await pglite.waitReady;
   console.log('[DB] Embedded PostgreSQL ready.');
 

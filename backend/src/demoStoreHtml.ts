@@ -10,13 +10,13 @@ export function getDemoStoreHtml(): string {
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0b0f19;
-      --card-bg: rgba(23, 32, 54, 0.7);
-      --border: rgba(255, 255, 255, 0.08);
+      --bg: #0d1726;
+      --card-bg: #14283f;
+      --border: rgba(229, 233, 236, 0.12);
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --primary: #3b82f6;
-      --accent: #10b981;
+      --primary: #16866a;
+      --accent: #16866a;
     }
 
     * {
@@ -26,7 +26,7 @@ export function getDemoStoreHtml(): string {
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -57,15 +57,13 @@ export function getDemoStoreHtml(): string {
     .logo-icon {
       width: 40px;
       height: 40px;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      border-radius: 12px;
+      background: #14283f;
+      border: 1px solid rgba(229, 233, 236, 0.2);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 20px;
-      color: white;
-      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 
     .title-group h1 {
@@ -80,19 +78,20 @@ export function getDemoStoreHtml(): string {
     }
 
     .header-links a {
-      color: #60a5fa;
+      color: #16866a;
       text-decoration: none;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       margin-left: 16px;
       padding: 8px 14px;
       border-radius: 8px;
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.2);
+      background: rgba(22, 134, 106, 0.12);
+      border: 1px solid rgba(22, 134, 106, 0.3);
       transition: all 0.2s;
     }
 
     .header-links a:hover {
+      background: rgba(22, 134, 106, 0.22);
       background: rgba(59, 130, 246, 0.2);
     }
 
@@ -255,7 +254,15 @@ export function getDemoStoreHtml(): string {
   <div class="container">
     <header>
       <div class="logo-badge">
-        <div class="logo-icon">CW</div>
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="5" width="28" height="22" rx="4" fill="#FFFFFF"/>
+            <rect x="2" y="10" width="28" height="4" fill="#0A1828"/>
+            <circle cx="8" cy="20" r="2.5" fill="#16866A"/>
+            <circle cx="13" cy="20" r="2.5" fill="#D97706" fill-opacity="0.85"/>
+            <path d="M22 17L26 21M26 21H22M26 21V17" stroke="#16866A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
         <div class="title-group">
           <h1>CardWise Simulated Merchant Lab</h1>
           <p>Local live test environment for Merchant DOM Adapters & Content Script</p>

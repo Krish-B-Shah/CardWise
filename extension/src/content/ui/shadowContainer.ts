@@ -99,7 +99,13 @@ export class ShadowPanelManager {
 
     const logo = document.createElement('div');
     logo.className = 'cw-logo';
-    logo.textContent = 'CW';
+    logo.innerHTML = `<svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="5" width="28" height="22" rx="4" fill="#FFFFFF"/>
+      <rect x="2" y="10" width="28" height="4" fill="#0A1828"/>
+      <circle cx="8" cy="20" r="2.5" fill="#16866A"/>
+      <circle cx="13" cy="20" r="2.5" fill="#D97706" fill-opacity="0.85"/>
+      <path d="M22 17L26 21M26 21H22M26 21V17" stroke="#16866A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
 
     const titleGroup = document.createElement('div');
     const title = document.createElement('div');
@@ -117,7 +123,8 @@ export class ShadowPanelManager {
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'cw-close-btn';
-    closeBtn.title = 'Dismiss recommendation';
+    closeBtn.title = 'Dismiss recommendation (Esc)';
+    closeBtn.setAttribute('aria-label', 'Dismiss recommendation');
     closeBtn.innerHTML = '&times;';
     closeBtn.onclick = () => {
       this.dismiss();
@@ -135,10 +142,9 @@ export class ShadowPanelManager {
     if (recommendation && recommendation.bestCard) {
       const best = recommendation.bestCard;
 
-      // Recommended Card Highlight Box
+      // Recommended Card Box
       const cardBox = document.createElement('div');
       cardBox.className = 'cw-card-highlight';
-      cardBox.style.background = best.colorGradient || 'linear-gradient(135deg, #2563eb, #1e40af)';
 
       const cardTop = document.createElement('div');
       cardTop.className = 'cw-card-top';
@@ -163,7 +169,7 @@ export class ShadowPanelManager {
 
       const earnLabel = document.createElement('div');
       earnLabel.className = 'cw-earn-label';
-      earnLabel.textContent = `estimated cashback on $${recommendation.purchaseAmount.toFixed(2)}`;
+      earnLabel.textContent = `estimated return on $${recommendation.purchaseAmount.toFixed(2)}`;
 
       cardMid.appendChild(earnAmount);
       cardMid.appendChild(earnLabel);
@@ -192,6 +198,7 @@ export class ShadowPanelManager {
           altRow.className = 'cw-alt-row';
 
           const altName = document.createElement('span');
+          altName.className = 'cw-alt-name';
           altName.textContent = alt.name;
 
           const altRate = document.createElement('span');
@@ -230,7 +237,7 @@ export class ShadowPanelManager {
 
     const currencySymbol = document.createElement('span');
     currencySymbol.textContent = '$';
-    currencySymbol.style.color = '#94a3b8';
+    currencySymbol.className = 'cw-currency-symbol';
 
     const amountInput = document.createElement('input');
     amountInput.type = 'number';
@@ -263,7 +270,7 @@ export class ShadowPanelManager {
 
     const openPopupBtn = document.createElement('button');
     openPopupBtn.className = 'cw-link-btn';
-    openPopupBtn.textContent = 'Open Dashboard & More Details ↗';
+    openPopupBtn.textContent = 'Open Dashboard & Card Portfolio ↗';
     openPopupBtn.onclick = () => {
       callbacks.onOpenPopup();
     };
@@ -279,20 +286,23 @@ export class ShadowPanelManager {
   private getStyles(): string {
     return `
       .cw-panel {
-        width: 330px;
-        background: #0f172a;
-        color: #f8fafc;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12);
+        width: 340px;
+        background: #ffffff;
+        color: #14283f;
+        border-radius: 12px;
+        border: 1px solid #e5e9ec;
+        box-shadow: 0 10px 25px -5px rgba(20, 40, 63, 0.15), 0 8px 10px -6px rgba(20, 40, 63, 0.08);
         overflow: hidden;
-        animation: cwSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: cwSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+        font-variant-numeric: tabular-nums;
       }
 
       @keyframes cwSlideIn {
         from {
           opacity: 0;
-          transform: translateY(16px) scale(0.96);
+          transform: translateY(12px) scale(0.98);
         }
         to {
           opacity: 1;
@@ -300,44 +310,47 @@ export class ShadowPanelManager {
         }
       }
 
+      @media (prefers-reduced-motion: reduce) {
+        .cw-panel {
+          animation: none;
+        }
+      }
+
       .cw-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 16px;
-        background: rgba(30, 41, 59, 0.7);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 12px 14px;
+        background: #14283f;
+        color: #ffffff;
       }
 
       .cw-brand-group {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 9px;
       }
 
       .cw-logo {
-        width: 28px;
-        height: 28px;
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-        border-radius: 8px;
+        width: 22px;
+        height: 22px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 800;
-        font-size: 13px;
-        color: white;
       }
 
       .cw-title {
         font-size: 13px;
         font-weight: 700;
-        color: #f8fafc;
+        color: #ffffff;
         line-height: 1.2;
+        letter-spacing: -0.01em;
       }
 
       .cw-subtitle {
         font-size: 11px;
         color: #94a3b8;
+        line-height: 1.2;
       }
 
       .cw-close-btn {
@@ -347,109 +360,126 @@ export class ShadowPanelManager {
         font-size: 20px;
         cursor: pointer;
         line-height: 1;
-        padding: 4px;
+        padding: 2px 6px;
         border-radius: 4px;
+        transition: background 0.15s ease, color 0.15s ease;
       }
 
       .cw-close-btn:hover {
-        color: #f8fafc;
-        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.12);
       }
 
       .cw-body {
-        padding: 14px 16px;
+        padding: 14px;
         display: flex;
         flex-direction: column;
         gap: 12px;
+        background: #ffffff;
       }
 
       .cw-card-highlight {
-        border-radius: 12px;
-        padding: 14px;
-        color: white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        background: #f8f9f7;
+        border: 1px solid #e5e9ec;
+        border-radius: 8px;
+        padding: 12px 14px;
+        box-sizing: border-box;
       }
 
       .cw-card-top {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
       }
 
       .cw-card-name {
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 600;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        color: #14283f;
       }
 
       .cw-rate-badge {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(4px);
+        background: rgba(22, 134, 106, 0.1);
+        color: #16866a;
+        border: 1px solid rgba(22, 134, 106, 0.25);
         padding: 2px 8px;
         border-radius: 12px;
         font-size: 11px;
         font-weight: 700;
+        font-variant-numeric: tabular-nums;
       }
 
       .cw-card-mid {
         display: flex;
         align-items: baseline;
-        gap: 6px;
-        margin-bottom: 6px;
+        gap: 8px;
+        margin-bottom: 4px;
       }
 
       .cw-earn-amount {
         font-size: 22px;
-        font-weight: 800;
-        color: #38ef7d;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        font-weight: 700;
+        color: #16866a;
+        font-variant-numeric: tabular-nums;
       }
 
       .cw-earn-label {
         font-size: 11px;
-        opacity: 0.85;
+        color: #64748b;
+        font-variant-numeric: tabular-nums;
       }
 
       .cw-rule-desc {
         font-size: 11px;
-        opacity: 0.9;
-        line-height: 1.3;
+        color: #64748b;
+        line-height: 1.4;
       }
 
       .cw-alt-section {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 10px;
+        background: #fafafa;
+        border: 1px solid #e5e9ec;
+        border-radius: 8px;
         padding: 10px 12px;
       }
 
       .cw-section-title {
-        font-size: 11px;
+        font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #94a3b8;
+        color: #64748b;
         margin-bottom: 6px;
-        font-weight: 600;
+        font-weight: 700;
       }
 
       .cw-alt-row {
         display: flex;
         justify-content: space-between;
         font-size: 12px;
-        color: #cbd5e1;
-        padding: 4px 0;
+        padding: 5px 0;
+        border-bottom: 1px dashed #e5e9ec;
+      }
+
+      .cw-alt-row:last-child {
+        border-bottom: none;
+      }
+
+      .cw-alt-name {
+        color: #14283f;
+        font-weight: 500;
       }
 
       .cw-alt-rate {
-        color: #38bdf8;
+        color: #16866a;
         font-weight: 600;
+        font-variant-numeric: tabular-nums;
       }
 
       .cw-amount-bar {
-        background: rgba(30, 41, 59, 0.5);
+        background: #f8f9f7;
+        border: 1px solid #e5e9ec;
         border-radius: 8px;
-        padding: 8px 10px;
+        padding: 10px 12px;
         display: flex;
         flex-direction: column;
         gap: 6px;
@@ -457,7 +487,8 @@ export class ShadowPanelManager {
       }
 
       .cw-amount-label {
-        color: #94a3b8;
+        color: #64748b;
+        font-weight: 500;
       }
 
       .cw-input-group {
@@ -466,63 +497,75 @@ export class ShadowPanelManager {
         gap: 6px;
       }
 
+      .cw-currency-symbol {
+        color: #64748b;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
       .cw-input {
-        width: 80px;
-        background: #1e293b;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: #f8fafc;
+        width: 84px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #14283f;
         border-radius: 6px;
-        padding: 4px 8px;
+        padding: 5px 8px;
         font-size: 12px;
         font-family: inherit;
+        font-variant-numeric: tabular-nums;
+        transition: border-color 0.15s ease;
       }
 
       .cw-input:focus {
         outline: none;
-        border-color: #3b82f6;
+        border-color: #16866a;
+        box-shadow: 0 0 0 2px rgba(22, 134, 106, 0.15);
       }
 
       .cw-btn-sm {
-        background: #3b82f6;
+        background: #14283f;
         border: none;
-        color: white;
-        padding: 4px 10px;
+        color: #ffffff;
+        padding: 6px 12px;
         border-radius: 6px;
         font-size: 11px;
         font-weight: 600;
         cursor: pointer;
+        transition: background 0.15s ease;
       }
 
       .cw-btn-sm:hover {
-        background: #2563eb;
+        background: #0a1828;
       }
 
       .cw-footer {
-        padding: 10px 16px;
-        background: rgba(15, 23, 42, 0.5);
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 10px 14px;
+        background: #f8f9f7;
+        border-top: 1px solid #e5e9ec;
         text-align: center;
       }
 
       .cw-link-btn {
         background: transparent;
         border: none;
-        color: #38bdf8;
+        color: #16866a;
         font-size: 11px;
         font-weight: 600;
         cursor: pointer;
         padding: 4px;
+        transition: color 0.15s ease;
       }
 
       .cw-link-btn:hover {
         text-decoration: underline;
+        color: #116952;
       }
 
       .cw-empty-state {
         font-size: 12px;
-        color: #94a3b8;
+        color: #64748b;
         text-align: center;
-        padding: 12px 0;
+        padding: 14px 0;
       }
     `;
   }

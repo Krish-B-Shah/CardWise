@@ -1,22 +1,71 @@
 :root {
-  --bg-main: #070a13;
-  --bg-surface: #0f172a;
-  --bg-card: rgba(19, 29, 51, 0.65);
-  --bg-card-hover: rgba(26, 40, 71, 0.85);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-focus: #3b82f6;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  --primary: #3b82f6;
-  --primary-glow: rgba(59, 130, 246, 0.35);
-  --accent-green: #10b981;
-  --accent-purple: #8b5cf6;
-  --accent-amber: #f59e0b;
-  --accent-rose: #f43f5e;
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  /* Brand Palette */
+  --navy-950: #0B1724;
+  --navy-900: #14283F;
+  --navy-800: #1B3554;
+  --navy-700: #24446A;
+  --navy-600: #325885;
+
+  /* Surfaces & Backgrounds */
+  --bg-app: #F8F9FA;
+  --bg-sidebar: #14283F;
+  --bg-surface: #FFFFFF;
+  --bg-surface-subtle: #F1F4F6;
+  --bg-surface-hover: #F8FAFB;
+  --bg-surface-active: #EEF2F6;
+
+  /* Borders & Dividers */
+  --border-subtle: #E5E9EC;
+  --border-default: #D8DFE5;
+  --border-strong: #BAC6D1;
+  --border-focus: #16866A;
+
+  /* Primary Fintech Emerald */
+  --emerald-600: #106852;
+  --emerald-500: #16866A;
+  --emerald-400: #1CA482;
+  --emerald-100: #DCF2EC;
+  --emerald-50: #EDF8F5;
+
+  /* Neutrals & Text */
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-subtle: #94A3B8;
+  --text-inverse: #FFFFFF;
+  --text-inverse-muted: #94A3B8;
+
+  /* Functional Status */
+  --status-positive: #16866A;
+  --status-positive-bg: #EDF8F5;
+  --status-warning: #B45309;
+  --status-warning-bg: #FEF3C7;
+  --status-danger: #BE123C;
+  --status-danger-bg: #FFE4E6;
+
+  /* Spacing Grid (8px based) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Restrained Shadows */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-modal: 0 20px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
 }
 
 * {
@@ -26,17 +75,19 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--bg-main);
-  background-image: 
-    radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.12) 0px, transparent 40%),
-    radial-gradient(at 90% 10%, rgba(139, 92, 246, 0.10) 0px, transparent 45%),
-    radial-gradient(at 50% 90%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
-  background-attachment: fixed;
-  color: var(--text-main);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular figures for financial alignment */
+.tabular-nums, .font-mono, [data-tabular] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'cv05' 1;
 }
 
 button, input, select, textarea {
@@ -48,182 +99,248 @@ a {
   text-decoration: none;
 }
 
-/* Scrollbars */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  background: var(--border-default);
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--text-subtle);
 }
 
-/* Glass Card */
-.glass-panel {
-  background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-  transition: all 0.25s ease;
+/* Crisp Clean Panel Card */
+.fintech-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.14);
+.fintech-card-hover:hover {
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-md);
 }
 
-/* Badges */
+/* Restrained Financial Badges */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 12px;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.2;
 }
 
-.badge-blue {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+.badge-emerald {
+  background: var(--status-positive-bg);
+  color: var(--emerald-600);
+  border: 1px solid rgba(22, 134, 106, 0.2);
 }
 
-.badge-green {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+.badge-navy {
+  background: #EDF2F7;
+  color: var(--navy-900);
+  border: 1px solid #D8DFE5;
 }
 
-.badge-purple {
-  background: rgba(139, 92, 246, 0.15);
-  color: #c084fc;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+.badge-slate {
+  background: var(--bg-surface-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
 }
 
 .badge-amber {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: var(--status-warning-bg);
+  color: var(--status-warning);
+  border: 1px solid rgba(180, 83, 9, 0.2);
 }
 
-/* Buttons */
+.badge-rose {
+  background: var(--status-danger-bg);
+  color: var(--status-danger);
+  border: 1px solid rgba(190, 18, 60, 0.2);
+}
+
+/* Form Controls */
+.input-control {
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.input-control:focus {
+  border-color: var(--emerald-500);
+  box-shadow: 0 0 0 3px rgba(22, 134, 106, 0.12);
+}
+
+.input-control::placeholder {
+  color: var(--text-subtle);
+}
+
+/* Action Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 9px 18px;
-  border-radius: var(--radius-sm);
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  border: none;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: translateY(1px);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  box-shadow: 0 4px 14px var(--primary-glow);
+  background: var(--emerald-500);
+  color: var(--text-inverse);
+  box-shadow: 0 1px 2px rgba(22, 134, 106, 0.2);
 }
 
 .btn-primary:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+  background: var(--emerald-600);
+  box-shadow: 0 2px 4px rgba(22, 134, 106, 0.3);
+}
+
+.btn-navy {
+  background: var(--navy-900);
+  color: var(--text-inverse);
+  box-shadow: 0 1px 2px rgba(20, 40, 63, 0.2);
+}
+
+.btn-navy:hover {
+  background: var(--navy-800);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border);
-  color: var(--text-main);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-xs);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--bg-surface-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
 }
 
-.btn-danger {
-  background: rgba(244, 63, 94, 0.15);
-  border: 1px solid rgba(244, 63, 94, 0.3);
-  color: #fb7185;
+.btn-danger-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--status-danger);
 }
 
-.btn-danger:hover {
-  background: rgba(244, 63, 94, 0.25);
+.btn-danger-ghost:hover {
+  background: var(--status-danger-bg);
+  border-color: rgba(190, 18, 60, 0.2);
 }
 
-/* Realistic Credit Card Styling */
-.credit-card-canvas {
+/* Professional Credit Card Canvas */
+.fintech-card-graphic {
   width: 100%;
-  max-width: 340px;
-  height: 200px;
-  border-radius: 18px;
-  padding: 22px;
-  color: white;
+  max-width: 320px;
+  height: 195px;
+  border-radius: 14px;
+  padding: 20px;
+  color: #FFFFFF;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.3);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.credit-card-canvas:hover {
-  transform: translateY(-4px) rotateX(2deg);
-  box-shadow: 0 22px 40px -6px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.4);
+.fintech-card-graphic:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 28px -6px rgba(15, 23, 42, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-.credit-card-chip {
-  width: 40px;
-  height: 30px;
-  background: linear-gradient(135deg, #fbbf24, #d97706);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+.fintech-chip-metal {
+  width: 38px;
+  height: 28px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #E2B96F 0%, #C4933F 50%, #A67325 100%);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
   position: relative;
 }
 
-/* Modal Overlay */
-.modal-overlay {
+.fintech-chip-metal::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* Modals */
+.fintech-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
-  animation: fadeIn 0.2s ease;
+  padding: 16px;
+  animation: fadeInModal 0.15s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInModal {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-.modal-content {
-  background: #0f172a;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 28px;
+.fintech-modal-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
   width: 100%;
   max-width: 520px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-  animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  animation: scaleInModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes scaleUp {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+@keyframes scaleInModal {
+  from { transform: scale(0.97) translateY(6px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Accessibility: respect reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

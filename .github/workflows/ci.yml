@@ -1,0 +1,34 @@
+name: CardWise Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-verify:
+    name: Test & Build Monorepo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Workspace Dependencies
+        run: npm ci
+
+      - name: Run Backend & Extension Unit Tests
+        run: npm run test
+
+      - name: Build Chrome Extension (MV3)
+        run: npm run build:extension
+
+      - name: Build React Dashboard
+        run: npm run start:dashboard -- --dry-run || npm --workspace=dashboard run build

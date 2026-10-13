@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, RewardRule } from '../types.js';
-import { Plus, Trash2, Settings2, Percent } from 'lucide-react';
+import { Plus, Trash2, Percent, Sliders, X } from 'lucide-react';
 
 interface RewardRulesProps {
   cards: Card[];
@@ -9,19 +9,24 @@ interface RewardRulesProps {
   onDeleteRule: (id: string) => Promise<void>;
 }
 
-const CATEGORY_OPTIONS = [
-  { value: 'online_shopping', label: 'Online Shopping / E-commerce' },
-  { value: 'electronics', label: 'Electronics & Gadgets' },
-  { value: 'dining', label: 'Dining & Takeout' },
-  { value: 'groceries', label: 'Groceries & Supermarkets' },
-  { value: 'travel', label: 'Travel & Flights' },
-  { value: 'gas', label: 'Gas Stations & EV Charging' },
-  { value: 'retail', label: 'Retail & Department Stores' },
-  { value: 'drugstores', label: 'Drugstores & Pharmacies' },
-  { value: 'general', label: 'General / All Purchases' },
+const CATEGORY_DEFINITIONS = [
+  { value: 'online_shopping', label: 'Online Shopping / E-commerce', defaultRate: 3.0 },
+  { value: 'electronics', label: 'Electronics & Computers', defaultRate: 5.0 },
+  { value: 'dining', label: 'Dining & Restaurants', defaultRate: 3.0 },
+  { value: 'groceries', label: 'Supermarkets & Groceries', defaultRate: 3.0 },
+  { value: 'travel', label: 'Travel, Flights & Hotels', defaultRate: 2.0 },
+  { value: 'gas', label: 'Gas Stations & EV Charging', defaultRate: 3.0 },
+  { value: 'retail', label: 'Department Stores & Retail', defaultRate: 2.0 },
+  { value: 'drugstores', label: 'Drugstores & Pharmacies', defaultRate: 3.0 },
+  { value: 'general', label: 'General / All Other Purchases', defaultRate: 1.5 },
 ];
 
-export const RewardRules: React.FC<RewardRulesProps> = ({ cards, rules, onAddRule, onDeleteRule }) => {
+export const RewardRules: React.FC<RewardRulesProps> = ({
+  cards,
+  rules,
+  onAddRule,
+  onDeleteRule
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState(cards[0]?.id || '');
   const [category, setCategory] = useState('online_shopping');
@@ -52,11 +57,13 @@ export const RewardRules: React.FC<RewardRulesProps> = ({ cards, rules, onAddRul
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 800 }}>Reward Rates & Rules Engine</h2>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-            Configure cashback rates and categories used by CardWise recommendation algorithms
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+            Reward Rules & Category Multipliers
+          </h2>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '3px 0 0 0' }}>
+            Configure merchant category cashback rates and annual spending caps ({rules.length} active rules)
           </p>
         </div>
         <button
@@ -67,100 +74,105 @@ export const RewardRules: React.FC<RewardRulesProps> = ({ cards, rules, onAddRul
           className="btn btn-primary"
           disabled={cards.length === 0}
         >
-          <Plus size={16} />
-          <span>Add Reward Rule</span>
+          <Plus size={15} />
+          <span>New Multiplier Rule</span>
         </button>
       </div>
 
       {/* Rules Table */}
-      <div className="glass-panel" style={{ padding: 24, overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'left' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-              <th style={{ padding: '12px' }}>Card Name</th>
-              <th style={{ padding: '12px' }}>Category</th>
-              <th style={{ padding: '12px' }}>Reward Rate</th>
-              <th style={{ padding: '12px' }}>Spend Cap</th>
-              <th style={{ padding: '12px' }}>Description</th>
-              <th style={{ padding: '12px', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rules.length === 0 ? (
-              <tr>
-                <td colSpan={6} style={{ padding: '32px 12px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  No rules configured. Click "Add Reward Rule" to add custom cashback percentages.
-                </td>
+      <div className="fintech-card" style={{ padding: '0', overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: 'var(--bg-surface-subtle)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Card</th>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Category</th>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Cashback Multiplier</th>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Spend Cap</th>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Rule Description</th>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Action</th>
               </tr>
-            ) : (
-              rules.map(rule => (
-                <tr key={rule.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
-                  <td style={{ padding: '14px 12px', fontWeight: 600 }}>
-                    <div style={{ color: '#f8fafc' }}>{rule.card_name}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>{rule.card_bank}</div>
-                  </td>
-                  <td style={{ padding: '14px 12px' }}>
-                    <span className="badge badge-purple" style={{ textTransform: 'capitalize' }}>
-                      {rule.category.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td style={{ padding: '14px 12px' }}>
-                    <span className="badge badge-green" style={{ fontSize: 13, fontWeight: 700 }}>
-                      {(rule.reward_rate * 100).toFixed(1)}%
-                    </span>
-                  </td>
-                  <td style={{ padding: '14px 12px', color: 'var(--text-muted)' }}>
-                    {rule.cap_amount ? `$${rule.cap_amount.toLocaleString()}/yr` : 'Unlimited'}
-                  </td>
-                  <td style={{ padding: '14px 12px', color: 'var(--text-muted)', maxWidth: 280 }}>
-                    {rule.description || '—'}
-                  </td>
-                  <td style={{ padding: '14px 12px', textAlign: 'right' }}>
-                    <button
-                      onClick={() => {
-                        if (confirm('Delete this reward rule?')) {
-                          onDeleteRule(rule.id);
-                        }
-                      }}
-                      className="btn btn-danger"
-                      style={{ padding: '4px 8px', fontSize: 11 }}
-                    >
-                      <Trash2 size={12} />
-                    </button>
+            </thead>
+            <tbody>
+              {rules.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: '40px 18px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    No reward multiplier rules configured.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                rules.map(rule => (
+                  <tr key={rule.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <td style={{ padding: '14px 18px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{rule.card_name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{rule.card_bank}</div>
+                    </td>
+                    <td style={{ padding: '14px 18px' }}>
+                      <span className="badge badge-slate" style={{ textTransform: 'capitalize' }}>
+                        {rule.category.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td style={{ padding: '14px 18px' }}>
+                      <span className="badge badge-emerald" style={{ fontSize: 13, fontWeight: 700 }}>
+                        {(rule.reward_rate * 100).toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="tabular-nums" style={{ padding: '14px 18px', color: 'var(--text-secondary)' }}>
+                      {rule.cap_amount ? `$${rule.cap_amount.toLocaleString()}/yr` : 'No Cap'}
+                    </td>
+                    <td style={{ padding: '14px 18px', color: 'var(--text-secondary)', maxWidth: 300 }}>
+                      {rule.description || '—'}
+                    </td>
+                    <td style={{ padding: '14px 18px', textAlign: 'right' }}>
+                      <button
+                        onClick={() => {
+                          if (confirm('Delete this reward rule?')) {
+                            onDeleteRule(rule.id);
+                          }
+                        }}
+                        className="btn btn-danger-ghost"
+                        style={{ padding: '4px 8px', fontSize: 11 }}
+                        title="Delete Rule"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Add Rule Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div className="fintech-modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="fintech-modal-container" onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Settings2 size={20} color="#8b5cf6" />
-                <h3 style={{ fontSize: 18, fontWeight: 700 }}>Add Category Reward Rule</h3>
+                <Sliders size={18} color="var(--emerald-500)" />
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+                  Configure Category Multiplier
+                </h3>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: 20, cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
               >
-                &times;
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                   Select Credit Card
                 </label>
                 <select
                   value={selectedCardId}
                   onChange={e => setSelectedCardId(e.target.value)}
-                  style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                  className="input-control"
                 >
                   {cards.map(c => (
                     <option key={c.id} value={c.id}>
@@ -171,25 +183,29 @@ export const RewardRules: React.FC<RewardRulesProps> = ({ cards, rules, onAddRul
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                   Spending Category
                 </label>
                 <select
                   value={category}
-                  onChange={e => setCategory(e.target.value)}
-                  style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                  onChange={e => {
+                    setCategory(e.target.value);
+                    const def = CATEGORY_DEFINITIONS.find(d => d.value === e.target.value);
+                    if (def) setRatePercent(def.defaultRate);
+                  }}
+                  className="input-control"
                 >
-                  {CATEGORY_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                  {CATEGORY_DEFINITIONS.map(def => (
+                    <option key={def.value} value={def.value}>
+                      {def.label}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                     Cashback Rate (%)
                   </label>
                   <div style={{ position: 'relative' }}>
@@ -201,40 +217,40 @@ export const RewardRules: React.FC<RewardRulesProps> = ({ cards, rules, onAddRul
                       required
                       value={ratePercent}
                       onChange={e => setRatePercent(Number(e.target.value))}
-                      style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                      className="input-control tabular-nums"
                     />
-                    <Percent size={14} color="#94a3b8" style={{ position: 'absolute', right: 12, top: 12 }} />
+                    <Percent size={14} color="var(--text-muted)" style={{ position: 'absolute', right: 12, top: 11 }} />
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
-                    Optional Cap ($)
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                    Annual Spend Cap ($) (Optional)
                   </label>
                   <input
                     type="number"
-                    placeholder="e.g. 500"
+                    placeholder="e.g. 500 or 6000"
                     value={capAmount}
                     onChange={e => setCapAmount(e.target.value)}
-                    style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                    className="input-control tabular-nums"
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
-                  Rule Description / Terms
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                  Terms & Description
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. 5% back on Amazon purchases"
+                  placeholder="e.g. 5% back on Amazon.com purchases"
                   value={description}
                   onChange={e => setDescription(e.target.value)}
-                  style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                  className="input-control"
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8, paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -247,7 +263,7 @@ export const RewardRules: React.FC<RewardRulesProps> = ({ cards, rules, onAddRul
                   disabled={submitting}
                   className="btn btn-primary"
                 >
-                  {submitting ? 'Saving...' : 'Save Rule'}
+                  {submitting ? 'Saving...' : 'Save Multiplier'}
                 </button>
               </div>
             </form>

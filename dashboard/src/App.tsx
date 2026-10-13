@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar } from './components/Navbar.js';
+import { Sidebar } from './components/Sidebar.js';
+import { TopHeader } from './components/TopHeader.js';
 import { AnalyticsView } from './components/AnalyticsView.js';
 import { CardManager } from './components/CardManager.js';
 import { RewardRules } from './components/RewardRules.js';
@@ -16,15 +17,15 @@ export const App: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const loadAllData = async () => {
-    setLoading(true);
     try {
       const [cardsData, rulesData, txData, analyticsData] = await Promise.all([
         api.getCards(),
@@ -40,6 +41,7 @@ export const App: React.FC = () => {
       console.error('Error fetching data from shared API:', err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -47,9 +49,15 @@ export const App: React.FC = () => {
     loadAllData();
   }, []);
 
+  const handleManualRefresh = async () => {
+    setRefreshing(true);
+    await loadAllData();
+    showToast('Synchronized with shared database.');
+  };
+
   const handleAddCard = async (cardData: Partial<Card>) => {
     await api.createCard(cardData);
-    showToast(`Added ${cardData.name} to portfolio!`);
+    showToast(`Added ${cardData.name} to portfolio.`);
     await loadAllData();
   };
 
@@ -61,13 +69,13 @@ export const App: React.FC = () => {
 
   const handleAddRule = async (ruleData: Partial<RewardRule>) => {
     await api.createReward(ruleData);
-    showToast('Reward multiplier rule saved!');
+    showToast('Reward multiplier rule saved.');
     await loadAllData();
   };
 
   const handleDeleteRule = async (id: string) => {
     await api.deleteReward(id);
-    showToast('Reward multiplier deleted.');
+    showToast('Reward rule removed.');
     await loadAllData();
   };
 
@@ -79,86 +87,137 @@ export const App: React.FC = () => {
     card_used_id: string;
   }) => {
     await api.createTransaction(txData);
-    showToast('Transaction logged & gap analyzed!');
+    showToast('Transaction logged & gap analyzed.');
     await loadAllData();
   };
 
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+  const tabTitles: Record<string, { title: string; subtitle: string }> = {
+    analytics: {
+      title: 'Financial Analytics',
+      subtitle: 'Overview of spending patterns, cashback yield, and optimization efficiency'
+    },
+    cards: {
+      title: 'Payment Cards',
+      subtitle: 'Manage credit cards, spending limits, and issuer configurations'
+    },
+    rules: {
+      title: 'Reward Multipliers',
+      subtitle: 'Category-specific percentages and spend caps'
+    },
+    transactions: {
+      title: 'Transaction Ledger',
+      subtitle: 'Review historical purchases and reward gap performance'
+    },
+    optimizer: {
+      title: 'Rewards Optimizer',
+      subtitle: 'Real-time card recommendation calculator for upcoming purchases'
+    }
+  };
 
-      {/* Floating Toast Notification */}
-      {toastMessage && (
-        <div style={{
-          position: 'fixed',
-          top: 80,
-          right: 24,
-          background: 'rgba(15, 23, 42, 0.95)',
-          border: '1px solid rgba(59, 130, 246, 0.4)',
-          color: '#f8fafc',
-          padding: '12px 18px',
-          borderRadius: 12,
-          boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          fontSize: 13,
-          fontWeight: 600,
-          zIndex: 1000,
-          animation: 'fadeIn 0.2s ease'
-        }}>
-          <CheckCircle size={16} color="#34d399" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+  const currentTabInfo = tabTitles[activeTab] || tabTitles.analytics;
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-app)' }}>
+      {/* Sidebar Navigation */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        cardsCount={cards.length}
+      />
 
       {/* Main Content Area */}
-      <main style={{ maxWidth: 1300, width: '100%', margin: '0 auto', padding: '32px 24px', flex: 1 }}>
-        {activeTab === 'analytics' && (
-          <AnalyticsView analytics={analytics} loading={loading} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <TopHeader
+          title={currentTabInfo.title}
+          subtitle={currentTabInfo.subtitle}
+          onRefresh={handleManualRefresh}
+          refreshing={refreshing}
+        />
+
+        {/* Floating Notification Toast */}
+        {toastMessage && (
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              background: 'var(--navy-900)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-inverse)',
+              padding: '10px 16px',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: 'var(--shadow-lg)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 13,
+              fontWeight: 500,
+              zIndex: 1000
+            }}
+          >
+            <CheckCircle size={15} color="var(--emerald-400)" />
+            <span>{toastMessage}</span>
+          </div>
         )}
 
-        {activeTab === 'cards' && (
-          <CardManager
-            cards={cards}
-            onAddCard={handleAddCard}
-            onDeleteCard={handleDeleteCard}
-          />
-        )}
+        <main style={{ padding: '32px', maxWidth: 1200, width: '100%', margin: '0 auto', flex: 1 }}>
+          {activeTab === 'analytics' && (
+            <AnalyticsView
+              analytics={analytics}
+              transactions={transactions}
+              loading={loading}
+              onNavigateToOptimizer={() => setActiveTab('optimizer')}
+              onNavigateToCards={() => setActiveTab('cards')}
+            />
+          )}
 
-        {activeTab === 'rules' && (
-          <RewardRules
-            cards={cards}
-            rules={rules}
-            onAddRule={handleAddRule}
-            onDeleteRule={handleDeleteRule}
-          />
-        )}
+          {activeTab === 'cards' && (
+            <CardManager
+              cards={cards}
+              onAddCard={handleAddCard}
+              onDeleteCard={handleDeleteCard}
+            />
+          )}
 
-        {activeTab === 'transactions' && (
-          <TransactionsView
-            cards={cards}
-            transactions={transactions}
-            onAddTransaction={handleAddTransaction}
-          />
-        )}
+          {activeTab === 'rules' && (
+            <RewardRules
+              cards={cards}
+              rules={rules}
+              onAddRule={handleAddRule}
+              onDeleteRule={handleDeleteRule}
+            />
+          )}
 
-        {activeTab === 'optimizer' && (
-          <OptimizerCalculator />
-        )}
-      </main>
+          {activeTab === 'transactions' && (
+            <TransactionsView
+              cards={cards}
+              transactions={transactions}
+              onAddTransaction={handleAddTransaction}
+            />
+          )}
 
-      {/* Footer */}
-      <footer style={{
-        borderTop: '1px solid var(--border)',
-        padding: '24px',
-        textAlign: 'center',
-        fontSize: 12,
-        color: 'var(--text-dim)',
-        background: 'rgba(7, 10, 19, 0.8)'
-      }}>
-        CardWise — Smart Checkout Recommendations & Rewards Dashboard • Fictional Demo Profile (Alex Morgan)
-      </footer>
+          {activeTab === 'optimizer' && (
+            <OptimizerCalculator />
+          )}
+        </main>
+
+        {/* Footer */}
+        <footer
+          style={{
+            padding: '20px 32px',
+            borderTop: '1px solid var(--border-subtle)',
+            background: 'var(--bg-surface)',
+            fontSize: 12,
+            color: 'var(--text-muted)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <span>CardWise Financial Intelligence Platform</span>
+          <span>Fictional Demo Environment (Alex Morgan)</span>
+        </footer>
+      </div>
     </div>
   );
 };

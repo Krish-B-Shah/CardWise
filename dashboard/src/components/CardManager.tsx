@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card } from '../types.js';
-import { Plus, Trash2, ShieldAlert, Sparkles, CreditCard as CardIcon } from 'lucide-react';
+import { Plus, Trash2, ShieldCheck, CreditCard as CardIcon, X } from 'lucide-react';
 
 interface CardManagerProps {
   cards: Card[];
@@ -8,14 +8,14 @@ interface CardManagerProps {
   onDeleteCard: (id: string) => Promise<void>;
 }
 
-const GRADIENT_PRESETS = [
-  { label: 'Deep Blue', value: 'linear-gradient(135deg, #1e3a8a, #0f172a)' },
-  { label: 'Sky Azure', value: 'linear-gradient(135deg, #0284c7, #0369a1)' },
-  { label: 'Royal Violet', value: 'linear-gradient(135deg, #4f46e5, #7c3aed)' },
-  { label: 'Emerald Forest', value: 'linear-gradient(135deg, #059669, #065f46)' },
-  { label: 'Midnight Slate', value: 'linear-gradient(135deg, #334155, #0f172a)' },
-  { label: 'Sunset Amber', value: 'linear-gradient(135deg, #d97706, #b45309)' },
-  { label: 'Rose Gold', value: 'linear-gradient(135deg, #e11d48, #9f1239)' },
+// Sophisticated, restrained fintech card finishes (inspired by physical metal cards)
+const CARD_FINISHES = [
+  { label: 'Sapphire Navy', value: 'linear-gradient(135deg, #0F1E31 0%, #1A3352 100%)' },
+  { label: 'Matte Obsidian', value: 'linear-gradient(135deg, #18191B 0%, #2A2D32 100%)' },
+  { label: 'Emerald Reserve', value: 'linear-gradient(135deg, #0D4537 0%, #156550 100%)' },
+  { label: 'Slate Platinum', value: 'linear-gradient(135deg, #334155 0%, #475569 100%)' },
+  { label: 'Royal Indigo', value: 'linear-gradient(135deg, #2E1065 0%, #4C1D95 100%)' },
+  { label: 'Bronze Titanium', value: 'linear-gradient(135deg, #451A03 0%, #78350F 100%)' },
 ];
 
 export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDeleteCard }) => {
@@ -23,10 +23,10 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
   const [name, setName] = useState('');
   const [bank, setBank] = useState('Chase');
   const [network, setNetwork] = useState('Visa');
-  const [colorGradient, setColorGradient] = useState(GRADIENT_PRESETS[0].value);
-  const [lastFour, setLastFour] = useState('1234');
+  const [colorGradient, setColorGradient] = useState(CARD_FINISHES[0].value);
+  const [lastFour, setLastFour] = useState('4821');
   const [annualFee, setAnnualFee] = useState(0);
-  const [creditLimit, setCreditLimit] = useState(5000);
+  const [creditLimit, setCreditLimit] = useState(10000);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -54,126 +54,154 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Header Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+      {/* Section Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 800 }}>Credit Card Portfolio</h2>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-            Fictional credit cards synced across CardWise Dashboard & Chrome MV3 Extension
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+            Credit Card Portfolio
+          </h2>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '3px 0 0 0' }}>
+            Manage the payment cards in your rewards optimization strategy ({cards.length} active)
           </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
           className="btn btn-primary"
         >
-          <Plus size={16} />
-          <span>Add Fictional Card</span>
+          <Plus size={15} />
+          <span>Add Credit Card</span>
         </button>
       </div>
 
-      {/* Demo Notice Banner */}
-      <div style={{
-        background: 'rgba(59, 130, 246, 0.08)',
-        border: '1px solid rgba(59, 130, 246, 0.25)',
-        borderRadius: 14,
-        padding: '14px 18px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 14
-      }}>
-        <ShieldAlert size={20} color="#60a5fa" style={{ flexShrink: 0 }} />
-        <div style={{ fontSize: 13, color: '#93c5fd' }}>
-          <strong>Fictional Demo Data Security:</strong> No actual credit card numbers, CVVs, or bank credentials are ever stored or queried. CardWise uses fictional profile tokens to recommend optimal rewards.
-        </div>
+      {/* Security notice banner */}
+      <div
+        style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-md)',
+          padding: '12px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          fontSize: 12,
+          color: 'var(--text-secondary)'
+        }}
+      >
+        <ShieldCheck size={16} color="var(--emerald-500)" style={{ flexShrink: 0 }} />
+        <span>
+          <strong>Zero Financial Credentials Stored:</strong> CardWise operates strictly using reward rules, spending caps, and tokenized card labels. Real account numbers, PINs, and CVVs are never handled.
+        </span>
       </div>
 
-      {/* Cards Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-        gap: 20
-      }}>
+      {/* Credit Cards Grid */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gap: 20
+        }}
+      >
         {cards.map(card => (
-          <div key={card.id} className="glass-panel" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* Visual Card Canvas */}
+          <div
+            key={card.id}
+            className="fintech-card"
+            style={{
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: 16
+            }}
+          >
+            {/* Realistic Physical Card Canvas */}
             <div
-              className="credit-card-canvas"
-              style={{ background: card.color_gradient || 'linear-gradient(135deg, #1e3a8a, #0f172a)' }}
+              className="fintech-card-graphic"
+              style={{
+                background: card.color_gradient || 'linear-gradient(135deg, #0F1E31 0%, #1A3352 100%)'
+              }}
             >
+              {/* Top Row: Issuer Bank & Network */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', opacity: 0.9 }}>
-                  {card.bank.toUpperCase()}
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.85 }}>
+                  {card.bank}
                 </span>
-                <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.04em' }}>
                   {card.network}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div className="credit-card-chip" />
-                <Sparkles size={16} style={{ opacity: 0.6 }} />
+              {/* Middle Row: Metallic Chip */}
+              <div>
+                <div className="fintech-chip-metal" />
               </div>
 
+              {/* Bottom Row: Card Product Name & Masked Account */}
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '0.03em', textShadow: '0 2px 4px rgba(0,0,0,0.4)' }}>
+                <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
                   {card.name}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
-                  <span style={{ fontSize: 13, letterSpacing: '0.15em', fontFamily: 'monospace' }}>
-                    •••• •••• •••• {card.last_four}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                  <span className="font-mono tabular-nums" style={{ fontSize: 12, letterSpacing: '0.12em', opacity: 0.85 }}>
+                    •••• {card.last_four}
                   </span>
                   <span style={{ fontSize: 11, opacity: 0.85 }}>
-                    {card.annual_fee === 0 ? '$0 Fee' : `$${card.annual_fee}/yr`}
+                    {card.annual_fee === 0 ? '$0 Annual Fee' : `$${card.annual_fee}/yr`}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Card Details & Actions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                <span style={{ color: 'var(--text-muted)' }}>Credit Limit:</span>
-                <strong style={{ color: '#f8fafc' }}>${card.credit_limit.toLocaleString()}</strong>
+            {/* Card Metadata & Attributes */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                <span style={{ color: 'var(--text-muted)' }}>Credit Limit</span>
+                <span className="tabular-nums" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                  ${card.credit_limit.toLocaleString()}
+                </span>
               </div>
 
               {card.notes && (
-                <div style={{ fontSize: 12, color: 'var(--text-dim)', fontStyle: 'italic' }}>
-                  "{card.notes}"
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                  {card.notes}
                 </div>
               )}
 
-              {/* Reward Rules Pointers */}
+              {/* Category Multipliers Tags */}
               <div>
-                <div style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, marginBottom: 6 }}>
-                  Active Reward Multipliers:
+                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', marginBottom: 6 }}>
+                  Active Reward Rules
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {card.rules && card.rules.length > 0 ? (
                     card.rules.map(r => (
-                      <span key={r.id} className="badge badge-green" style={{ fontSize: 11 }}>
+                      <span key={r.id} className="badge badge-emerald" style={{ fontSize: 11 }}>
                         {(r.reward_rate * 100).toFixed(1)}% {r.category}
                       </span>
                     ))
                   ) : (
-                    <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>1.5% Base Cashback</span>
+                    <span className="badge badge-slate" style={{ fontSize: 11 }}>1.5% Base</span>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Delete Card Button */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+            {/* Bottom Actions */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid var(--border-subtle)' }}>
+              <span className="badge badge-slate" style={{ fontSize: 10 }}>
+                {card.is_active ? 'Active in Wallet' : 'Inactive'}
+              </span>
               <button
                 onClick={() => {
-                  if (confirm(`Remove ${card.name} from your fictional portfolio?`)) {
+                  if (confirm(`Remove ${card.name} from your card portfolio?`)) {
                     onDeleteCard(card.id);
                   }
                 }}
-                className="btn btn-danger"
-                style={{ padding: '6px 12px', fontSize: 12 }}
+                className="btn btn-danger-ghost"
+                style={{ padding: '4px 8px', fontSize: 11 }}
+                title="Remove Card"
               >
                 <Trash2 size={13} />
-                <span>Remove Card</span>
+                <span>Remove</span>
               </button>
             </div>
           </div>
@@ -182,24 +210,26 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
 
       {/* Add Card Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div className="fintech-modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="fintech-modal-container" onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <CardIcon size={20} color="#3b82f6" />
-                <h3 style={{ fontSize: 18, fontWeight: 700 }}>Add Fictional Credit Card</h3>
+                <CardIcon size={18} color="var(--emerald-500)" />
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+                  Add Payment Card
+                </h3>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: 20, cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
               >
-                &times;
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                   Card Product Name
                 </label>
                 <input
@@ -208,19 +238,19 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
                   placeholder="e.g. SavorOne Cash Rewards"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                  className="input-control"
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                     Issuing Bank
                   </label>
                   <select
                     value={bank}
                     onChange={e => setBank(e.target.value)}
-                    style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                    className="input-control"
                   >
                     <option value="Chase">Chase</option>
                     <option value="American Express">American Express</option>
@@ -233,13 +263,13 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
-                    Card Network
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                    Network
                   </label>
                   <select
                     value={network}
                     onChange={e => setNetwork(e.target.value)}
-                    style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                    className="input-control"
                   >
                     <option value="Visa">Visa</option>
                     <option value="Mastercard">Mastercard</option>
@@ -251,7 +281,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                     Last 4 Digits
                   </label>
                   <input
@@ -260,12 +290,12 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
                     required
                     value={lastFour}
                     onChange={e => setLastFour(e.target.value.replace(/\D/g, ''))}
-                    style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13, fontFamily: 'monospace' }}
+                    className="input-control tabular-nums font-mono"
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                     Annual Fee ($)
                   </label>
                   <input
@@ -273,63 +303,63 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
                     min={0}
                     value={annualFee}
                     onChange={e => setAnnualFee(Number(e.target.value))}
-                    style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                    className="input-control tabular-nums"
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
-                    Limit ($)
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                    Credit Limit ($)
                   </label>
                   <input
                     type="number"
                     min={500}
                     value={creditLimit}
                     onChange={e => setCreditLimit(Number(e.target.value))}
-                    style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                    className="input-control tabular-nums"
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
-                  Visual Card Theme
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>
+                  Card Visual Finish
                 </label>
-                <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6 }}>
-                  {GRADIENT_PRESETS.map((preset, idx) => (
+                <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+                  {CARD_FINISHES.map((finish, idx) => (
                     <div
                       key={idx}
-                      onClick={() => setColorGradient(preset.value)}
+                      onClick={() => setColorGradient(finish.value)}
                       style={{
-                        width: 38,
+                        width: 44,
                         height: 28,
                         borderRadius: 6,
-                        background: preset.value,
+                        background: finish.value,
                         cursor: 'pointer',
-                        border: colorGradient === preset.value ? '2px solid white' : '1px solid transparent',
-                        transform: colorGradient === preset.value ? 'scale(1.1)' : 'none',
+                        border: colorGradient === finish.value ? '2px solid var(--emerald-500)' : '1px solid var(--border-default)',
+                        boxShadow: colorGradient === finish.value ? '0 0 0 2px rgba(22, 134, 106, 0.25)' : 'none',
                         transition: 'all 0.15s ease'
                       }}
-                      title={preset.label}
+                      title={finish.label}
                     />
                   ))}
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
-                  Notes & Special Benefits
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                  Benefits & Notes
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. 3% Dining & Entertainment"
+                  placeholder="e.g. 3% back on dining and grocery delivery"
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                  className="input-control"
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8, paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -342,7 +372,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
                   disabled={submitting}
                   className="btn btn-primary"
                 >
-                  {submitting ? 'Saving...' : 'Save Card to Database'}
+                  {submitting ? 'Saving...' : 'Save Card'}
                 </button>
               </div>
             </form>

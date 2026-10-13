@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RecommendationResponse } from '../types.js';
 import { api } from '../api.js';
-import { Calculator, ShieldCheck, Sparkles } from 'lucide-react';
+import { Sparkles, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 export const OptimizerCalculator: React.FC = () => {
   const [domain, setDomain] = useState('amazon.com');
@@ -27,11 +27,11 @@ export const OptimizerCalculator: React.FC = () => {
   }, []);
 
   const merchantPresets = [
-    { label: 'Amazon.com', domain: 'amazon.com', category: 'online_shopping' },
+    { label: 'Amazon', domain: 'amazon.com', category: 'online_shopping' },
     { label: 'Best Buy', domain: 'bestbuy.com', category: 'electronics' },
     { label: 'Target', domain: 'target.com', category: 'retail' },
     { label: 'Walmart', domain: 'walmart.com', category: 'groceries' },
-    { label: 'Chipotle / Dining', domain: 'chipotle.com', category: 'dining' },
+    { label: 'Chipotle', domain: 'chipotle.com', category: 'dining' },
     { label: 'Delta Airlines', domain: 'delta.com', category: 'travel' },
   ];
 
@@ -39,28 +39,31 @@ export const OptimizerCalculator: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Header */}
       <div>
-        <h2 style={{ fontSize: 22, fontWeight: 800 }}>Rewards Opportunity Optimizer</h2>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-          Simulate upcoming online purchases to discover which card yields maximum cash return
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+          Rewards Opportunity Optimizer
+        </h2>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '3px 0 0 0' }}>
+          Simulate purchase amounts to identify your highest-earning credit card before checking out
         </p>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-        gap: 24
-      }}>
-        {/* Left Column: Input Form & Merchant Selector */}
-        <div className="glass-panel" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Calculator size={20} color="#3b82f6" />
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>Purchase Parameters</h3>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(340px, 1fr) minmax(380px, 1.25fr)',
+          gap: 20
+        }}
+      >
+        {/* Left Column: Purchase Parameters Form */}
+        <div className="fintech-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+            Simulate an Upcoming Purchase
           </div>
 
-          {/* Quick Preset Buttons */}
+          {/* Quick Presets */}
           <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>
-              Quick Presets
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>
+              Common Merchants
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {merchantPresets.map(preset => (
@@ -73,11 +76,11 @@ export const OptimizerCalculator: React.FC = () => {
                   }}
                   className="btn btn-secondary"
                   style={{
-                    fontSize: 11,
-                    padding: '6px 10px',
-                    borderColor: domain === preset.domain ? '#3b82f6' : undefined,
-                    background: domain === preset.domain ? 'rgba(59, 130, 246, 0.15)' : undefined,
-                    color: domain === preset.domain ? '#60a5fa' : undefined
+                    fontSize: 12,
+                    padding: '5px 10px',
+                    borderColor: domain === preset.domain ? 'var(--emerald-500)' : 'var(--border-default)',
+                    background: domain === preset.domain ? 'var(--emerald-50)' : 'var(--bg-surface)',
+                    color: domain === preset.domain ? 'var(--emerald-600)' : 'var(--text-secondary)'
                   }}
                 >
                   {preset.label}
@@ -86,10 +89,10 @@ export const OptimizerCalculator: React.FC = () => {
             </div>
           </div>
 
-          {/* Domain & Category */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {/* Domain & Category Inputs */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                 Merchant Domain
               </label>
               <input
@@ -97,18 +100,18 @@ export const OptimizerCalculator: React.FC = () => {
                 value={domain}
                 onChange={e => setDomain(e.target.value)}
                 placeholder="e.g. apple.com"
-                style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                className="input-control"
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                 Spending Category
               </label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 13 }}
+                className="input-control"
               >
                 <option value="online_shopping">Online Shopping</option>
                 <option value="electronics">Electronics</option>
@@ -122,22 +125,25 @@ export const OptimizerCalculator: React.FC = () => {
             </div>
           </div>
 
-          {/* Purchase Amount Slider & Input */}
+          {/* Purchase Amount Input */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>
-                Estimated Checkout Subtotal ($)
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Order Subtotal Amount ($)
               </label>
-              <span style={{ fontSize: 14, fontWeight: 800, color: '#38bdf8' }}>${amount.toFixed(2)}</span>
+              <span className="tabular-nums" style={{ fontSize: 13, fontWeight: 700, color: 'var(--emerald-600)' }}>
+                ${amount.toFixed(2)}
+              </span>
             </div>
             <input
               type="number"
               step="5"
               min="1"
-              max="10000"
+              max="50000"
               value={amount}
               onChange={e => setAmount(Number(e.target.value))}
-              style={{ width: '100%', background: '#1e293b', border: '1px solid var(--border)', color: 'white', padding: '10px 12px', borderRadius: 8, fontSize: 14, fontWeight: 700 }}
+              className="input-control tabular-nums"
+              style={{ fontSize: 15, fontWeight: 600 }}
             />
           </div>
 
@@ -145,83 +151,97 @@ export const OptimizerCalculator: React.FC = () => {
             onClick={calculate}
             disabled={loading}
             className="btn btn-primary"
-            style={{ width: '100%', padding: '12px', fontSize: 14 }}
+            style={{ width: '100%', padding: '10px 16px', marginTop: 4 }}
           >
-            {loading ? 'Evaluating Reward Matrix...' : 'Compare Rewards Across Wallet'}
+            <Sparkles size={15} />
+            <span>{loading ? 'Evaluating Reward Rates...' : 'Calculate Optimal Return'}</span>
           </button>
         </div>
 
-        {/* Right Column: Optimal Card Recommendation Result */}
-        <div className="glass-panel" style={{ padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        {/* Right Column: Recommendation Intelligence Result */}
+        <div className="fintech-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           {result ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {/* Header result row */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span className="badge badge-green" style={{ fontSize: 12 }}>
-                  <Sparkles size={13} />
-                  Optimal Recommendation
+                <span className="badge badge-emerald">
+                  <CheckCircle2 size={12} />
+                  Top Recommendation
                 </span>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  Merchant: <strong style={{ color: '#f8fafc' }}>{result.merchant.name}</strong>
+                  Merchant: <strong style={{ color: 'var(--text-primary)' }}>{result.merchant.name}</strong>
                 </span>
               </div>
 
-              {/* Best Card Highlight Banner */}
+              {/* Highlight Recommended Card Block */}
               <div
                 style={{
-                  background: result.bestCard.colorGradient || 'linear-gradient(135deg, #1e3a8a, #0f172a)',
-                  borderRadius: 16,
-                  padding: 20,
-                  color: 'white',
-                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)'
+                  background: 'var(--bg-surface-subtle)',
+                  border: '1px solid var(--border-default)',
+                  borderLeft: '4px solid var(--emerald-500)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '20px'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>
-                    {result.bestCard.name} (•••• {result.bestCard.lastFour})
-                  </span>
-                  <span style={{ background: 'rgba(255, 255, 255, 0.25)', padding: '3px 10px', borderRadius: 12, fontWeight: 800, fontSize: 12 }}>
-                    {result.bestCard.cashbackPercentage}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)' }}>
+                      {result.bestCard.bank}
+                    </div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginTop: 2 }}>
+                      {result.bestCard.name}
+                    </div>
+                    <div className="font-mono tabular-nums" style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                      •••• {result.bestCard.lastFour}
+                    </div>
+                  </div>
+
+                  <span className="badge badge-emerald" style={{ fontSize: 13, fontWeight: 700, padding: '4px 10px' }}>
+                    {result.bestCard.cashbackPercentage} Return
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '10px 0' }}>
-                  <span style={{ fontSize: 32, fontWeight: 900, color: '#38ef7d', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '14px 0 8px 0' }}>
+                  <span className="tabular-nums" style={{ fontSize: 32, fontWeight: 800, color: 'var(--emerald-600)', letterSpacing: '-0.02em' }}>
                     +${result.bestCard.estimatedCashback.toFixed(2)}
                   </span>
-                  <span style={{ fontSize: 13, opacity: 0.9 }}>
-                    cash back return
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    estimated cashback on this order
                   </span>
                 </div>
 
-                <div style={{ fontSize: 12, opacity: 0.9, lineHeight: 1.4 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.4 }}>
                   {result.bestCard.rewardRuleDescription}
                 </div>
               </div>
 
-              {/* Explanation & Baseline comparison */}
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                padding: '12px 16px',
-                borderRadius: 12,
-                border: '1px solid var(--border)',
-                fontSize: 12,
-                color: '#cbd5e1'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#38bdf8', fontWeight: 600, marginBottom: 4 }}>
-                  <ShieldCheck size={15} />
-                  <span>Recommendation Summary</span>
+              {/* Clear Explanation / Rationale */}
+              <div
+                style={{
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '12px 14px',
+                  fontSize: 12,
+                  color: 'var(--text-secondary)',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10
+                }}
+              >
+                <ShieldCheck size={16} color="var(--emerald-500)" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div style={{ lineHeight: 1.45 }}>
+                  {result.explanation}
                 </div>
-                {result.explanation}
               </div>
 
-              {/* Alternatives List */}
+              {/* Wallet Comparison Alternatives */}
               {result.alternatives && result.alternatives.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
-                    Wallet Comparison Alternatives
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', marginBottom: 8 }}>
+                    Other Cards in Your Wallet
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {result.alternatives.map(alt => (
                       <div
                         key={alt.id}
@@ -229,20 +249,20 @@ export const OptimizerCalculator: React.FC = () => {
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
-                          padding: '10px 14px',
-                          background: 'rgba(255, 255, 255, 0.02)',
-                          border: '1px solid var(--border)',
-                          borderRadius: 10,
-                          fontSize: 13
+                          padding: '9px 12px',
+                          background: 'var(--bg-surface-subtle)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: 'var(--radius-sm)',
+                          fontSize: 12
                         }}
                       >
                         <div>
-                          <div style={{ fontWeight: 600 }}>{alt.name}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>{alt.bank}</div>
+                          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{alt.name}</span>
+                          <span style={{ color: 'var(--text-muted)', marginLeft: 6 }}>({alt.bank})</span>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontWeight: 700, color: '#60a5fa' }}>{alt.cashbackPercentage}</span>
-                          <span style={{ color: 'var(--text-muted)', marginLeft: 8 }}>
+                          <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{alt.cashbackPercentage}</span>
+                          <span className="tabular-nums" style={{ color: 'var(--text-muted)', marginLeft: 8 }}>
                             (+${alt.estimatedCashback.toFixed(2)})
                           </span>
                         </div>
@@ -253,8 +273,8 @@ export const OptimizerCalculator: React.FC = () => {
               )}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-              Select a merchant and click Compare Rewards
+            <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
+              Configure purchase parameters and click Calculate.
             </div>
           )}
         </div>

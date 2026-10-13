@@ -77,6 +77,18 @@ export class ShadowPanelManager {
 
     const container = document.createElement('div');
     container.className = 'cw-panel';
+    container.setAttribute('role', 'dialog');
+    container.setAttribute('aria-label', 'CardWise Credit Card Recommendation');
+
+    // Handle Escape key to dismiss
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        this.dismiss();
+        callbacks.onDismiss();
+        window.removeEventListener('keydown', handleKeydown);
+      }
+    };
+    window.addEventListener('keydown', handleKeydown);
 
     // Header
     const header = document.createElement('div');

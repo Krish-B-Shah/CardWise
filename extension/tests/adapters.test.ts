@@ -4,7 +4,7 @@ import { AmazonAdapter } from '../src/content/adapters/amazonAdapter.js';
 import { BestBuyAdapter } from '../src/content/adapters/bestbuyAdapter.js';
 import { TargetAdapter, LocalDemoStoreAdapter } from '../src/content/adapters/targetAdapter.js';
 import { AdapterRegistry } from '../src/content/adapters/registry.js';
-import { parseCurrencyText, isElementSensitive } from '../src/content/adapters/baseAdapter.js';
+import { parseCurrencyText, isElementSensitive, pollForSubtotal } from '../src/content/adapters/baseAdapter.js';
 
 describe('Merchant Adapters Unit Tests', () => {
   describe('Base Adapter Utilities', () => {
@@ -32,6 +32,18 @@ describe('Merchant Adapters Unit Tests', () => {
       expect(isElementSensitive(doc.querySelector('[name="creditcard_number"]')!)).toBe(true);
       expect(isElementSensitive(doc.getElementById('cvv')!)).toBe(true);
       expect(isElementSensitive(doc.getElementById('subtotal')!)).toBe(false);
+    });
+
+    it('polls for subtotal with retry when element hydrates asynchronously', async () => {
+      let attempts = 0;
+      const delayedExtractor = () => {
+        attempts++;
+        return attempts >= 2 ? 89.99 : null;
+      };
+
+      const result = await pollForSubtotal(delayedExtractor, 3, 20);
+      expect(result).toBe(89.99);
+      expect(attempts).toBe(2);
     });
   });
 

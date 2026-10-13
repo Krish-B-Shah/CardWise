@@ -55,3 +55,19 @@ export function safeTextContent(el: Element | null): string | null {
   if (!el || isElementSensitive(el)) return null;
   return el.textContent?.trim() || null;
 }
+
+export async function pollForSubtotal(
+  extractor: () => number | null,
+  maxAttempts = 4,
+  intervalMs = 200
+): Promise<number | null> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const result = extractor();
+    if (result !== null) {
+      return result;
+    }
+    await new Promise(resolve => setTimeout(resolve, intervalMs));
+  }
+  return null;
+}
+

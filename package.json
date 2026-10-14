@@ -14,7 +14,11 @@
     "build:extension": "npm --workspace=extension run build",
     "test:backend": "npm --workspace=backend test",
     "test:extension": "npm --workspace=extension test",
-    "test": "npm run test:backend && npm run test:extension"
+    "test": "npm run test:backend && npm run test:extension && npm --workspace=dashboard test",
+    "build": "npm --workspace=backend run build && npm --workspace=dashboard run build && npm run build:extension",
+    "typecheck": "npm --workspace=backend run typecheck && npm --workspace=dashboard run typecheck && npm --workspace=extension run typecheck",
+    "verify:compiled": "npm --workspace=backend run build && node backend/scripts/verify-compiled.cjs",
+    "verify:disk": "npm --workspace=backend run build && node backend/scripts/verify-disk.cjs"
   },
   "keywords": [
     "cardwise",

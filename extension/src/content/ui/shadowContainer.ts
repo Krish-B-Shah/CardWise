@@ -4,6 +4,7 @@ export interface PanelCallbacks {
   onManualAmountChange: (newAmount: number) => void;
   onDismiss: () => void;
   onOpenPopup: () => void;
+  onRetry?: () => void;
 }
 
 const SHADOW_HOST_ID = 'cardwise-checkout-host';
@@ -12,6 +13,7 @@ export class ShadowPanelManager {
   private hostEl: HTMLElement | null = null;
   private shadowRoot: ShadowRoot | null = null;
   private isDismissed = false;
+  private keydownHandler: ((event: KeyboardEvent) => void) | null = null;
 
   constructor() {
     // Check if dismissed in this session
@@ -27,6 +29,8 @@ export class ShadowPanelManager {
   }
 
   remove(): void {
+    if (this.keydownHandler) window.removeEventListener('keydown', this.keydownHandler);
+    this.keydownHandler = null;
     if (this.hostEl && this.hostEl.parentNode) {
       this.hostEl.parentNode.removeChild(this.hostEl);
     }
@@ -45,7 +49,8 @@ export class ShadowPanelManager {
   render(
     recommendation: RecommendationResult | null,
     extraction: SubtotalExtractionResult,
-    callbacks: PanelCallbacks
+    callbacks: PanelCallbacks,
+    status = 'Recommendation unavailable. Start the backend and retry.'
   ): void {
     if (this.isDismissed) return;
 
@@ -88,6 +93,8 @@ export class ShadowPanelManager {
         window.removeEventListener('keydown', handleKeydown);
       }
     };
+    if (this.keydownHandler) window.removeEventListener('keydown', this.keydownHandler);
+    this.keydownHandler = handleKeydown;
     window.addEventListener('keydown', handleKeydown);
 
     // Header
@@ -182,6 +189,10 @@ export class ShadowPanelManager {
       cardBox.appendChild(cardMid);
       cardBox.appendChild(cardRuleDesc);
       body.appendChild(cardBox);
+      const limitations = document.createElement('p');
+      limitations.className = 'cw-rule-desc';
+      limitations.textContent = 'Demo estimate from category rates. Caps, billing periods and issuer eligibility are not evaluated.';
+      body.appendChild(limitations);
 
       // Alternatives
       if (recommendation.alternatives && recommendation.alternatives.length > 0) {
@@ -190,7 +201,7 @@ export class ShadowPanelManager {
 
         const altTitle = document.createElement('div');
         altTitle.className = 'cw-section-title';
-        altTitle.textContent = 'Other eligible cards';
+        altTitle.textContent = 'Other configured cards';
         altSection.appendChild(altTitle);
 
         recommendation.alternatives.forEach(alt => {
@@ -216,8 +227,16 @@ export class ShadowPanelManager {
       // Pending / loading or no cards state
       const emptyState = document.createElement('div');
       emptyState.className = 'cw-empty-state';
-      emptyState.textContent = 'Analyzing checkout subtotal and card rewards...';
+      emptyState.setAttribute('role', 'status');
+      emptyState.textContent = status;
       body.appendChild(emptyState);
+      if (callbacks.onRetry) {
+        const retry = document.createElement('button');
+        retry.className = 'cw-btn-sm';
+        retry.textContent = 'Retry';
+        retry.onclick = callbacks.onRetry;
+        body.appendChild(retry);
+      }
     }
 
     // Amount input / subtotal override bar
@@ -244,14 +263,14 @@ export class ShadowPanelManager {
     amountInput.className = 'cw-input';
     amountInput.step = '0.01';
     amountInput.min = '0';
-    amountInput.value = recommendation ? recommendation.purchaseAmount.toFixed(2) : (extraction.amount ? extraction.amount.toFixed(2) : '100.00');
+    amountInput.value = recommendation ? recommendation.purchaseAmount.toFixed(2) : (extraction.amount !== null ? extraction.amount.toFixed(2) : '');
 
     const updateBtn = document.createElement('button');
     updateBtn.className = 'cw-btn-sm';
     updateBtn.textContent = 'Update';
     updateBtn.onclick = () => {
       const val = parseFloat(amountInput.value);
-      if (!isNaN(val) && val >= 0) {
+      if (Number.isFinite(val) && val >= 0) {
         callbacks.onManualAmountChange(val);
       }
     };

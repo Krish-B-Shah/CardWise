@@ -10,6 +10,7 @@ interface AnalyticsViewProps {
   analytics: AnalyticsData | null;
   transactions: Transaction[];
   loading: boolean;
+  error?: string | null;
   onNavigateToOptimizer: () => void;
   onNavigateToCards: () => void;
 }
@@ -18,16 +19,19 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
   analytics,
   transactions,
   loading,
+  error,
   onNavigateToOptimizer,
   onNavigateToCards
 }) => {
-  if (loading || !analytics) {
+  if (loading) {
     return (
       <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
         <p style={{ fontSize: 14 }}>Loading financial analytics...</p>
       </div>
     );
   }
+
+  if (!analytics) return <p>{error ? 'Analytics unavailable. Retry above.' : 'No analytics loaded.'}</p>;
 
   const { summary, categoryBreakdown, cardBreakdown, recentRecommendations } = analytics;
   const effectiveReturnRate = summary.totalSpend > 0
@@ -40,7 +44,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(320px, 1.4fr) repeat(3, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: 16
         }}
       >
@@ -53,13 +57,13 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            background: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAF9 100%)'
+            background: 'var(--bg-surface)'
           }}
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Total Cashback Earned
+                Estimated cashback
               </span>
               <span className="badge badge-emerald">
                 {effectiveReturnRate}% Avg Return
@@ -113,7 +117,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         <div className="fintech-card" style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Optimal Target
+              Modeled potential rewards
             </span>
             <div
               className="tabular-nums"
@@ -129,7 +133,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
             </div>
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            Max yield with optimal card selection
+            Based on stored historical estimates
           </div>
         </div>
 
@@ -147,7 +151,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Missed Rewards Gap
+                Estimated reward gap
               </span>
               {summary.totalRewardGap > 0 && (
                 <span className="badge badge-amber" style={{ fontSize: 10 }}>
@@ -169,7 +173,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
             </div>
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            Wallet efficiency: <strong style={{ color: 'var(--text-primary)' }}>{summary.optimizationScore}%</strong>
+            Recorded reward / modeled potential: <strong style={{ color: 'var(--text-primary)' }}>{summary.optimizationScore}%</strong>
           </div>
         </div>
       </div>
@@ -192,7 +196,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <AlertCircle size={18} color="var(--status-warning)" style={{ flexShrink: 0 }} />
             <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-              <strong>Optimization Opportunity:</strong> You forfeited <strong>${summary.totalRewardGap.toFixed(2)}</strong> by using a generic 1.5% card on Electronics. CardWise recommends using your <strong>Citi Custom Cash (5.0%)</strong> for upcoming electronics purchases.
+              Recorded estimates show a <strong>${summary.totalRewardGap.toFixed(2)}</strong> reward gap. Compare configured category rates before your next purchase. This is a modeled difference, not verified lost cashback.
             </div>
           </div>
           <button
@@ -210,7 +214,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(350px, 1.3fr) minmax(300px, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
           gap: 20
         }}
       >
@@ -225,7 +229,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                 Distribution of expenditure and rewards yield
               </p>
             </div>
-            <span className="badge badge-slate">Real-time Data</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>All recorded transactions</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -294,7 +298,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                   Card Share of Spend
                 </h2>
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
-                  Utilization across your active credit cards
+                  Share of recorded purchase amounts by card
                 </p>
               </div>
               <button
@@ -358,8 +362,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
               justifyContent: 'space-between'
             }}
           >
-            <span>Active Cards Configured: <strong>{cardBreakdown.length}</strong></span>
-            <span style={{ color: 'var(--emerald-600)', fontWeight: 600 }}>100% Tracking</span>
+            <span>Cards in recorded purchases: <strong>{cardBreakdown.length}</strong></span>
+
           </div>
         </div>
       </div>
@@ -369,13 +373,13 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-              Recent Checkout Recommendations
+              Recent model requests
             </h2>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
-              Live queries serviced by the CardWise recommendation engine
+              Includes checkout advice, calculators and manual purchase analysis
             </p>
           </div>
-          <span className="badge badge-emerald">Engine Active</span>
+
         </div>
 
         <div style={{ overflowX: 'auto' }}>

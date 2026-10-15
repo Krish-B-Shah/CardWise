@@ -36,6 +36,7 @@ export interface CardsResponseMessage {
   type: 'CARDS_RESPONSE';
   success: boolean;
   payload?: Card[];
+  cached?: boolean;
   error?: string;
 }
 
@@ -87,7 +88,7 @@ export function validateExtensionMessage(msg: unknown): msg is ExtensionMessage 
         typeof p.domain === 'string' &&
         p.domain.trim().length > 0 &&
         typeof p.amount === 'number' &&
-        !isNaN(p.amount) &&
+        Number.isFinite(p.amount) &&
         p.amount >= 0 &&
         (p.category === undefined || typeof p.category === 'string')
       );

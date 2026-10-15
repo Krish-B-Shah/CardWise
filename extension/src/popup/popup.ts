@@ -1,260 +1,163 @@
 import { Card, RecommendationResult } from '../shared/types.js';
-import { GetRecommendationMessage, RecommendationResponseMessage, CardsResponseMessage } from '../shared/messages.js';
+import { backendRequest, isRecommendation } from '../shared/backend.js';
+
+function text(id: string, value: string) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function element(tag: string, value: string, className = '') {
+  const el = document.createElement(tag);
+  el.textContent = value;
+  el.className = className;
+  return el;
+}
+
+async function message(request: object): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => reject(new Error('Backend request timed out')), 12000);
+    chrome.runtime.sendMessage(request, response => {
+      window.clearTimeout(timeout);
+      const error = chrome.runtime.lastError;
+      if (error || !response?.success) reject(new Error(error?.message || response?.error || 'Backend unavailable'));
+      else resolve(response);
+    });
+  });
+}
+
+export function setupTabs() {
+  document.querySelectorAll<HTMLButtonElement>('.nav-btn').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('.nav-btn, .tab-panel').forEach(el => el.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab || '')?.classList.add('active');
+    };
+  });
+}
+
+export function displayRecommendation(rec: RecommendationResult) {
+  text('best-card-name', `${rec.bestCard.name} (•••• ${rec.bestCard.lastFour})`);
+  text('best-card-rate', rec.bestCard.cashbackPercentage);
+  text('best-card-cashback', `+$${rec.bestCard.estimatedCashback.toFixed(2)}`);
+  text('best-card-desc', rec.bestCard.rewardRuleDescription);
+  const list = document.getElementById('alternatives-list');
+  list?.replaceChildren();
+  rec.alternatives.forEach(alt => {
+    const row = element('div', '', 'alt-item');
+    row.append(element('span', alt.name), element('span', `${alt.cashbackPercentage} ($${alt.estimatedCashback.toFixed(2)})`, 'alt-rate'));
+    list?.append(row);
+  });
+}
+
+export function renderCards(cards: Card[]) {
+  text('card-count', String(cards.length));
+  const container = document.getElementById('cards-list-container');
+  container?.replaceChildren();
+  if (!cards.length) container?.append(element('p', 'No cards configured. Add one in the dashboard.'));
+  cards.forEach(card => {
+    const row = element('div', '', 'card-item');
+    row.append(element('div', `${card.name} (•••• ${card.last_four})`, 'card-item-title'));
+    row.append(element('div', `${card.bank} · ${card.network} · Limit $${Number(card.credit_limit).toLocaleString()}`, 'card-item-bank'));
+    row.append(element('div', Number(card.annual_fee) === 0 ? 'No annual fee' : `$${card.annual_fee}/yr`));
+    const rules = element('div', '', 'card-item-rules');
+    (card.rules || []).forEach(rule => rules.append(element('span', `${(rule.reward_rate * 100).toFixed(1)}% ${rule.category}`, 'rule-pill')));
+    row.append(rules);
+    container?.append(row);
+  });
+}
+
+export async function queryRecommendation(domain: string, amount: number) {
+  const loading = document.getElementById('rec-loading');
+  const details = document.getElementById('rec-details');
+  const banner = document.getElementById('best-card-banner');
+  if (loading) { loading.style.display = 'block'; loading.textContent = 'Requesting estimate…'; }
+  if (details) details.style.display = 'block';
+  if (banner) banner.style.display = 'none';
+  document.getElementById('alternatives-list')?.replaceChildren();
+  try {
+    if (!domain || !Number.isFinite(amount) || amount < 0) throw new Error('Invalid purchase context');
+    const response = typeof chrome !== 'undefined' && typeof chrome.runtime?.sendMessage === 'function'
+      ? (await message({ type: 'GET_RECOMMENDATION', payload: { domain, amount } })).payload
+      : await backendRequest('recommend', { domain, amount });
+    if (!isRecommendation(response)) throw new Error('Invalid recommendation response');
+    displayRecommendation(response);
+    if (banner) banner.style.display = 'block';
+    if (loading) loading.style.display = 'none';
+  } catch {
+    if (loading) loading.textContent = 'Recommendation unavailable. Start the backend, check the amount, then select Recalculate to retry.';
+  }
+}
+
+async function loadCardsList() {
+  try {
+    const response = typeof chrome !== 'undefined' && typeof chrome.runtime?.sendMessage === 'function'
+      ? await message({ type: 'GET_CARDS' })
+      : { payload: await backendRequest('cards') };
+    renderCards(response.payload);
+    if (response.cached) text('sync-status-text', 'Offline · showing cached wallet. Use Sync to retry.');
+    return !response.cached;
+  } catch {
+    text('cards-list-container', 'Wallet unavailable. Start the backend and use Sync to retry.');
+    text('sync-status-text', 'Wallet unavailable. Use Sync to retry.');
+    return false;
+  }
+}
+
+export async function syncData() {
+  text('sync-status-text', 'Syncing…');
+  try {
+    if (typeof chrome !== 'undefined' && typeof chrome.runtime?.sendMessage === 'function') await message({ type: 'SYNC_DATA' });
+    else { await backendRequest('cards'); await backendRequest('merchants'); }
+    if (await loadCardsList()) text('sync-status-text', 'Last successful sync: ' + new Date().toLocaleTimeString());
+  } catch {
+    text('sync-status-text', 'Sync unavailable. Start the backend and use Sync to retry.');
+  }
+}
+
+export function setupCalculator() {
+  const button = document.getElementById('run-calc-btn') as HTMLButtonElement | null;
+  if (!button) return;
+  button.onclick = async () => {
+    const box = document.getElementById('calc-result-box');
+    if (!box) return;
+    box.style.display = 'block';
+    box.textContent = 'Calculating…';
+    button.disabled = true;
+    try {
+      const domain = (document.getElementById('calc-merchant-select') as HTMLSelectElement).value;
+      const amount = Number((document.getElementById('calc-amount-input') as HTMLInputElement).value);
+      if (!Number.isFinite(amount) || amount < 0) throw new Error('Invalid amount');
+      const rec = await backendRequest('recommend', { domain, amount }) as RecommendationResult;
+      box.replaceChildren(element('div', rec.bestCard.name), element('div', `$${rec.bestCard.estimatedCashback.toFixed(2)} estimated cashback`), element('p', rec.explanation));
+    } catch {
+      box.textContent = 'Recommendation unavailable. Start the backend, check the amount, and select Find Highest Return Card to retry.';
+    } finally { button.disabled = false; }
+  };
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   setupTabs();
-  setupSync();
-  loadActiveTabRecommendation();
-  loadCardsList();
   setupCalculator();
-});
-
-function setupTabs() {
-  const tabs = document.querySelectorAll<HTMLButtonElement>('.tab-btn');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-      tab.classList.add('active');
-      const targetId = tab.getAttribute('data-tab');
-      if (targetId) {
-        document.getElementById(targetId)?.classList.add('active');
-      }
-    });
-  });
-}
-
-function setupSync() {
-  const syncBtn = document.getElementById('sync-btn');
-  const statusText = document.getElementById('sync-status-text');
-
-  syncBtn?.addEventListener('click', () => {
-    if (statusText) statusText.innerText = 'Syncing cards from shared database...';
-    if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-      chrome.runtime.sendMessage({ type: 'SYNC_DATA' }, () => {
-        if (statusText) statusText.innerText = 'Synced at ' + new Date().toLocaleTimeString();
-        loadCardsList();
-        loadActiveTabRecommendation();
-      });
-    } else {
-      setTimeout(() => {
-        if (statusText) statusText.innerText = 'Synced at ' + new Date().toLocaleTimeString();
-      }, 500);
-    }
-  });
-}
-
-function loadActiveTabRecommendation() {
-  const domainLabel = document.getElementById('current-domain-label');
-  const recLoading = document.getElementById('rec-loading');
-  const recDetails = document.getElementById('rec-details');
-
-  let domain = 'amazon.com'; // Default demo domain
-
-  if (typeof chrome !== 'undefined' && chrome.tabs?.query) {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs && tabs[0] && tabs[0].url) {
-        try {
-          const urlObj = new URL(tabs[0].url);
-          domain = urlObj.hostname.replace(/^www\./, '');
-        } catch {}
-      }
-      if (domainLabel) domainLabel.innerText = domain;
-      queryRecommendation(domain, 150.00);
-    });
-  } else {
-    if (domainLabel) domainLabel.innerText = 'amazon.com (Simulated Active Tab)';
-    queryRecommendation(domain, 150.00);
-  }
-
-  // Set up tab amount input recalculation
-  const refreshBtn = document.getElementById('tab-amount-refresh');
-  const amountInput = document.getElementById('tab-amount-input') as HTMLInputElement;
-  refreshBtn?.addEventListener('click', () => {
-    const amt = parseFloat(amountInput.value) || 100.00;
-    if (recLoading) recLoading.style.display = 'block';
-    if (recDetails) recDetails.style.display = 'none';
-    queryRecommendation(domain, amt);
-  });
-}
-
-function queryRecommendation(domain: string, amount: number) {
-  const recLoading = document.getElementById('rec-loading');
-  const recDetails = document.getElementById('rec-details');
-
-  const msg: GetRecommendationMessage = {
-    type: 'GET_RECOMMENDATION',
-    payload: {
-      domain,
-      amount
-    }
+  const sync = document.getElementById('sync-btn');
+  if (sync) sync.onclick = () => { void syncData(); };
+  let domain = '';
+  const update = () => {
+    text('current-domain-label', domain || 'Active tab unavailable');
+    const amount = Number((document.getElementById('tab-amount-input') as HTMLInputElement)?.value);
+    void queryRecommendation(domain, amount);
   };
-
-  if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-    chrome.runtime.sendMessage(msg, (response: RecommendationResponseMessage) => {
-      if (recLoading) recLoading.style.display = 'none';
-      if (recDetails) recDetails.style.display = 'block';
-
-      if (response && response.success && response.payload) {
-        displayRecommendation(response.payload);
-      } else {
-        // Fallback display
-        displayFallback(domain, amount);
-      }
+  if (typeof chrome !== 'undefined' && chrome.tabs?.query) {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      if (chrome.runtime.lastError) { update(); return; }
+      try { domain = new URL(tabs[0]?.url || '').hostname.replace(/^www\./, ''); } catch { /* Display unavailable. */ }
+      update();
     });
-  } else {
-    // Local demo / direct fetch
-    fetch('http://localhost:3001/api/recommend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domain, amount })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (recLoading) recLoading.style.display = 'none';
-        if (recDetails) recDetails.style.display = 'block';
-        displayRecommendation(data);
-      })
-      .catch(() => {
-        if (recLoading) recLoading.style.display = 'none';
-        if (recDetails) recDetails.style.display = 'block';
-        displayFallback(domain, amount);
-      });
-  }
-}
-
-function displayRecommendation(rec: RecommendationResult) {
-  const banner = document.getElementById('best-card-banner');
-  const nameEl = document.getElementById('best-card-name');
-  const rateEl = document.getElementById('best-card-rate');
-  const cashEl = document.getElementById('best-card-cashback');
-  const descEl = document.getElementById('best-card-desc');
-  const altList = document.getElementById('alternatives-list');
-
-  if (banner && rec.bestCard.colorGradient) {
-    banner.style.background = rec.bestCard.colorGradient;
-  }
-  if (nameEl) nameEl.innerText = `${rec.bestCard.name} (•••• ${rec.bestCard.lastFour})`;
-  if (rateEl) rateEl.innerText = rec.bestCard.cashbackPercentage;
-  if (cashEl) cashEl.innerText = `+$${rec.bestCard.estimatedCashback.toFixed(2)}`;
-  if (descEl) descEl.innerText = rec.bestCard.rewardRuleDescription;
-
-  if (altList) {
-    altList.innerHTML = '';
-    rec.alternatives.forEach(alt => {
-      const item = document.createElement('div');
-      item.className = 'alt-item';
-      item.innerHTML = `
-        <span>${alt.name}</span>
-        <span class="alt-rate">${alt.cashbackPercentage} ($${alt.estimatedCashback.toFixed(2)})</span>
-      `;
-      altList.appendChild(item);
-    });
-  }
-}
-
-function displayFallback(domain: string, amount: number) {
-  const nameEl = document.getElementById('best-card-name');
-  const rateEl = document.getElementById('best-card-rate');
-  const cashEl = document.getElementById('best-card-cashback');
-  const descEl = document.getElementById('best-card-desc');
-
-  if (nameEl) nameEl.innerText = 'Prime Rewards Visa (•••• 7291)';
-  if (rateEl) rateEl.innerText = '5.0%';
-  if (cashEl) cashEl.innerText = `+$${(amount * 0.05).toFixed(2)}`;
-  if (descEl) descEl.innerText = `Optimal card for ${domain}`;
-}
-
-function loadCardsList() {
-  const container = document.getElementById('cards-list-container');
-  const countEl = document.getElementById('card-count');
-
-  if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-    chrome.runtime.sendMessage({ type: 'GET_CARDS' }, (response: CardsResponseMessage) => {
-      if (response && response.success && response.payload) {
-        renderCards(response.payload);
-      } else {
-        fetchCardsDirect();
-      }
-    });
-  } else {
-    fetchCardsDirect();
-  }
-
-  function fetchCardsDirect() {
-    fetch('http://localhost:3001/api/cards')
-      .then(res => res.json())
-      .then((cards: Card[]) => renderCards(cards))
-      .catch(() => {
-        if (container) container.innerHTML = '<div class="loading-spinner">Could not load cards. Start backend server.</div>';
-      });
-  }
-
-  function renderCards(cards: Card[]) {
-    if (countEl) countEl.innerText = cards.length.toString();
-    if (!container) return;
-
-    if (cards.length === 0) {
-      container.innerHTML = '<div class="loading-spinner">No cards found. Add cards in Dashboard.</div>';
-      return;
-    }
-
-    container.innerHTML = '';
-    cards.forEach(card => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'card-item';
-      cardEl.innerHTML = `
-        <div class="card-item-top">
-          <div>
-            <div class="card-item-title">${card.name} (•••• ${card.last_four})</div>
-            <div class="card-item-bank">${card.bank} • ${card.network} • Limit $${card.credit_limit.toLocaleString()}</div>
-          </div>
-          <span style="font-size:11px; font-weight:700; color:#38bdf8;">$${card.annual_fee === 0 ? 'No Fee' : '$' + card.annual_fee + '/yr'}</span>
-        </div>
-        <div class="card-item-rules">
-          ${(card.rules || []).map(r => `<span class="rule-pill">${(r.reward_rate * 100).toFixed(1)}% ${r.category}</span>`).join('')}
-        </div>
-      `;
-      container.appendChild(cardEl);
-    });
-  }
-}
-
-function setupCalculator() {
-  const runBtn = document.getElementById('run-calc-btn');
-  const merchantSelect = document.getElementById('calc-merchant-select') as HTMLSelectElement;
-  const amountInput = document.getElementById('calc-amount-input') as HTMLInputElement;
-  const resultBox = document.getElementById('calc-result-box');
-
-  runBtn?.addEventListener('click', () => {
-    const domain = merchantSelect.value;
-    const amount = parseFloat(amountInput.value) || 100;
-
-    if (resultBox) {
-      resultBox.style.display = 'block';
-      resultBox.innerHTML = '<div class="loading-spinner">Calculating optimal return...</div>';
-    }
-
-    fetch('http://localhost:3001/api/recommend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domain, amount })
-    })
-      .then(res => res.json())
-      .then((data: RecommendationResult) => {
-        if (!resultBox) return;
-        resultBox.innerHTML = `
-          <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px;">
-            <div style="font-size: 11px; color: #94a3b8;">Optimal Card for $${amount.toFixed(2)} on ${data.merchant.name}:</div>
-            <div style="font-size: 15px; font-weight: 700; color: #f8fafc; margin: 4px 0;">${data.bestCard.name}</div>
-            <div style="font-size: 20px; font-weight: 800; color: #34d399;">+$${data.bestCard.estimatedCashback.toFixed(2)} <span style="font-size: 12px; color: #94a3b8;">(${data.bestCard.cashbackPercentage})</span></div>
-            <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">${data.explanation}</div>
-          </div>
-        `;
-      })
-      .catch(err => {
-        if (resultBox) resultBox.innerHTML = `<div style="color:#f87171; font-size:12px;">Error: ${err.message}</div>`;
-      });
-  });
-}
+  } else update();
+  const refresh = document.getElementById('tab-amount-refresh') as HTMLButtonElement | null;
+  if (refresh) refresh.onclick = async () => {
+    refresh.disabled = true;
+    try { await queryRecommendation(domain, Number((document.getElementById('tab-amount-input') as HTMLInputElement).value)); }
+    finally { refresh.disabled = false; }
+  };
+  void loadCardsList();
+});

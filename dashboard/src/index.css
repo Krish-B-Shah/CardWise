@@ -271,15 +271,12 @@ a {
   justify-content: space-between;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.fintech-card-graphic:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 28px -6px rgba(15, 23, 42, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
+.fintech-card-graphic:hover { border-color: var(--border-strong); }
 
 .fintech-chip-metal {
   width: 38px;
@@ -304,8 +301,7 @@ a {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,7 +322,8 @@ a {
   box-shadow: var(--shadow-modal);
   width: 100%;
   max-width: 520px;
-  overflow: hidden;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
   animation: scaleInModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

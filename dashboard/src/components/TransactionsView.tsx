@@ -29,6 +29,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
   const [category, setCategory] = useState('electronics');
   const [amount, setAmount] = useState<number>(199.00);
   const [cardUsedId, setCardUsedId] = useState(cards[0]?.id || '');
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Filtered transactions
@@ -52,6 +53,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setError(null);
     try {
       await onAddTransaction({
         merchant_name: merchantName,
@@ -63,6 +65,8 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
       setIsModalOpen(false);
       setMerchantName('');
       setAmount(50.00);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to save. Please retry.');
     } finally {
       setSubmitting(false);
     }
@@ -70,6 +74,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {error && !isModalOpen && <p role="alert" style={{ color: 'var(--status-danger)' }}>{error}</p>}
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
         <div>
@@ -77,7 +82,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
             Transactions & Optimization Ledger
           </h2>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '3px 0 0 0' }}>
-            Compare actual cashback earned vs optimal potential rewards across all purchases
+            Estimated rewards on seeded and manually recorded purchases
           </p>
         </div>
         <button
@@ -152,8 +157,8 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                 <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Category</th>
                 <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Amount</th>
                 <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Card Used</th>
-                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Earned</th>
-                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Optimal Card</th>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Estimated reward</th>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Modeled best card</th>
                 <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Optimization</th>
               </tr>
             </thead>
@@ -201,13 +206,13 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                         +${tx.reward_earned.toFixed(2)}
                       </td>
                       <td style={{ padding: '14px 18px', color: 'var(--navy-900)', fontWeight: 500 }}>
-                        {tx.optimal_card_name || 'Same'}
+                        {tx.optimal_card_name || 'Unavailable'}
                       </td>
                       <td style={{ padding: '14px 18px' }}>
                         {isOptimal ? (
                           <span className="badge badge-emerald">
                             <CheckCircle2 size={11} />
-                            Optimal ($0 gap)
+                            No modeled gap
                           </span>
                         ) : (
                           <span className="badge badge-rose">
@@ -245,6 +250,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
             </div>
 
             <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {error && <p role="alert" style={{ color: 'var(--status-danger)' }}>{error}</p>}
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                   Merchant Name

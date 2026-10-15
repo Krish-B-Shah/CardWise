@@ -6,7 +6,7 @@ import {
   SyncResponseMessage
 } from '../shared/messages.js';
 
-const BACKEND_BASE_URL = 'http://localhost:3001/api';
+import { backendRequest } from '../shared/backend.js';
 
 // Cache configuration
 const CACHE_KEYS = {
@@ -64,23 +64,7 @@ async function handleGetRecommendation(payload: {
   amount: number;
 }): Promise<RecommendationResponseMessage> {
   try {
-    const res = await fetch(`${BACKEND_BASE_URL}/recommend`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        domain: payload.domain,
-        category: payload.category,
-        amount: payload.amount
-      })
-    });
-
-    if (!res.ok) {
-      throw new Error(`Recommendation backend returned status ${res.status}`);
-    }
-
-    const data = await res.json();
+    const data = await backendRequest('recommend', { domain: payload.domain, category: payload.category, amount: payload.amount });
     return {
       type: 'RECOMMENDATION_RESPONSE',
       success: true,
@@ -98,10 +82,7 @@ async function handleGetRecommendation(payload: {
 
 async function handleGetCards(): Promise<CardsResponseMessage> {
   try {
-    const res = await fetch(`${BACKEND_BASE_URL}/cards`);
-    if (!res.ok) throw new Error(`Cards API returned status ${res.status}`);
-
-    const cards = await res.json();
+    const cards = await backendRequest('cards');
     await chrome.storage.local.set({ [CACHE_KEYS.CARDS]: cards });
 
     return {
@@ -116,7 +97,8 @@ async function handleGetCards(): Promise<CardsResponseMessage> {
       return {
         type: 'CARDS_RESPONSE',
         success: true,
-        payload: cached[CACHE_KEYS.CARDS]
+        payload: cached[CACHE_KEYS.CARDS],
+        cached: true
       };
     }
 
@@ -128,24 +110,11 @@ async function handleGetCards(): Promise<CardsResponseMessage> {
   }
 }
 
-async function syncBackendData(): Promise<SyncResponseMessage> {
+export async function syncBackendData(): Promise<SyncResponseMessage> {
   try {
     console.log('[CardWise SW] Syncing cards and merchants from shared backend...');
-    const [cardsRes, merchantsRes] = await Promise.all([
-      fetch(`${BACKEND_BASE_URL}/cards`),
-      fetch(`${BACKEND_BASE_URL}/merchants`)
-    ]);
-
-    if (cardsRes.ok) {
-      const cards = await cardsRes.json();
-      await chrome.storage.local.set({ [CACHE_KEYS.CARDS]: cards });
-    }
-
-    if (merchantsRes.ok) {
-      const merchants = await merchantsRes.json();
-      await chrome.storage.local.set({ [CACHE_KEYS.MERCHANTS]: merchants });
-    }
-
+    const [cards, merchants] = await Promise.all([backendRequest('cards'), backendRequest('merchants')]);
+    await chrome.storage.local.set({ [CACHE_KEYS.CARDS]: cards, [CACHE_KEYS.MERCHANTS]: merchants });
     const now = Date.now();
     await chrome.storage.local.set({ [CACHE_KEYS.LAST_SYNC]: now });
     console.log('[CardWise SW] Sync successful.');

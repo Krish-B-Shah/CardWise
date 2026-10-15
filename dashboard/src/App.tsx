@@ -16,6 +16,7 @@ export const App: React.FC = () => {
   const [rules, setRules] = useState<RewardRule[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -25,7 +26,8 @@ export const App: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const loadAllData = async () => {
+  const loadAllData = async (): Promise<boolean> => {
+    setError(null);
     try {
       const [cardsData, rulesData, txData, analyticsData] = await Promise.all([
         api.getCards(),
@@ -33,12 +35,15 @@ export const App: React.FC = () => {
         api.getTransactions(),
         api.getAnalytics()
       ]);
+      if (!Array.isArray(cardsData) || !Array.isArray(rulesData) || !Array.isArray(txData) || !analyticsData?.summary || !Array.isArray(analyticsData.categoryBreakdown) || !Array.isArray(analyticsData.cardBreakdown) || !Array.isArray(analyticsData.recentRecommendations)) throw new Error('The API returned invalid dashboard data.');
       setCards(cardsData);
       setRules(rulesData);
       setTransactions(txData);
       setAnalytics(analyticsData);
+      return true;
     } catch (err) {
-      console.error('Error fetching data from shared API:', err);
+      setError(err instanceof Error ? err.message : 'Unable to load dashboard data.');
+      return false;
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -51,8 +56,7 @@ export const App: React.FC = () => {
 
   const handleManualRefresh = async () => {
     setRefreshing(true);
-    await loadAllData();
-    showToast('Synchronized with shared database.');
+    if (await loadAllData()) showToast('Dashboard refreshed.');
   };
 
   const handleAddCard = async (cardData: Partial<Card>) => {
@@ -93,20 +97,20 @@ export const App: React.FC = () => {
 
   const tabTitles: Record<string, { title: string; subtitle: string }> = {
     analytics: {
-      title: 'Financial Analytics',
-      subtitle: 'Overview of spending patterns, cashback yield, and optimization efficiency'
+      title: 'Rewards overview',
+      subtitle: 'Demo records · All recorded transactions · Estimated rewards'
     },
     cards: {
-      title: 'Payment Cards',
+      title: 'Card portfolio',
       subtitle: 'Manage credit cards, spending limits, and issuer configurations'
     },
     rules: {
-      title: 'Reward Multipliers',
-      subtitle: 'Category-specific percentages and spend caps'
+      title: 'Reward rules',
+      subtitle: 'Configured category rates; spending caps are not enforced'
     },
     transactions: {
       title: 'Transaction Ledger',
-      subtitle: 'Review historical purchases and reward gap performance'
+      subtitle: 'Seeded and manually recorded purchases; no payment verification'
     },
     optimizer: {
       title: 'Rewards Optimizer',
@@ -161,11 +165,14 @@ export const App: React.FC = () => {
         )}
 
         <main style={{ padding: '32px', maxWidth: 1200, width: '100%', margin: '0 auto', flex: 1 }}>
+          {error && <div role="alert" style={{ marginBottom: 16, color: 'var(--status-danger)' }}>{error} <button className="btn btn-secondary" onClick={handleManualRefresh}>Retry</button></div>}
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Demo estimates from configured category rates. Caps, billing periods, issuer eligibility and points valuation are not evaluated. New cards start with an editable 1.5% demo rule.</p>
           {activeTab === 'analytics' && (
             <AnalyticsView
               analytics={analytics}
               transactions={transactions}
               loading={loading}
+              error={error}
               onNavigateToOptimizer={() => setActiveTab('optimizer')}
               onNavigateToCards={() => setActiveTab('cards')}
             />
@@ -214,7 +221,7 @@ export const App: React.FC = () => {
             alignItems: 'center'
           }}
         >
-          <span>CardWise Financial Intelligence Platform</span>
+          <span>CardWise · Category-rate demo</span>
           <span>Fictional Demo Environment (Alex Morgan)</span>
         </footer>
       </div>

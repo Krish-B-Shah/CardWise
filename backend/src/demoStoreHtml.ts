@@ -309,7 +309,7 @@ export function getDemoStoreHtml(): string {
         </p>
 
         <!-- Simulated DOM structure container matching adapter selectors -->
-        <div id="checkout-container" class="checkout-summary">
+        <div id="checkout-container" class="checkout-summary" data-cardwise-store="amazon">
           <div class="summary-line">
             <span>Items Subtotal:</span>
             <span id="subtotal-val">$149.99</span>
@@ -393,6 +393,7 @@ export function getDemoStoreHtml(): string {
 
     function renderCart() {
       const store = stores[currentStoreKey];
+      document.getElementById('checkout-container').setAttribute('data-cardwise-store', currentStoreKey);
       document.getElementById('store-title').innerText = store.name;
       document.getElementById('domain-badge').innerText = store.domain;
       document.getElementById('merchant-category').innerText = store.category;

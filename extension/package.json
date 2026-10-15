@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "CardWise Chrome Manifest V3 Extension for Contextual Credit Card Recommendations",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.content.config.ts && node scripts/verify-build.cjs",
     "dev": "vite build --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.283",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^20.17.10",
     "jsdom": "^25.0.1",
     "typescript": "^5.7.2",

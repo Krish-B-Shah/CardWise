@@ -24,11 +24,17 @@ jobs:
       - name: Install Workspace Dependencies
         run: npm ci
 
-      - name: Run Backend & Extension Unit Tests
+      - name: Type-check All Workspaces
+        run: npm run typecheck
+
+      - name: Run Backend, Extension and Dashboard Regression Tests
         run: npm run test
 
-      - name: Build Chrome Extension (MV3)
-        run: npm run build:extension
+      - name: Build All Workspaces
+        run: npm run build
 
-      - name: Build React Dashboard
-        run: npm --workspace=dashboard run build
+      - name: Verify Compiled Backend Startup and API
+        run: node backend/scripts/verify-compiled.cjs
+
+      - name: Verify Disk Persistence and Graceful Restart
+        run: node backend/scripts/verify-disk.cjs

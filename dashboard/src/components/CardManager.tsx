@@ -10,12 +10,12 @@ interface CardManagerProps {
 
 // Sophisticated, restrained fintech card finishes (inspired by physical metal cards)
 const CARD_FINISHES = [
-  { label: 'Sapphire Navy', value: 'linear-gradient(135deg, #0F1E31 0%, #1A3352 100%)' },
-  { label: 'Matte Obsidian', value: 'linear-gradient(135deg, #18191B 0%, #2A2D32 100%)' },
-  { label: 'Emerald Reserve', value: 'linear-gradient(135deg, #0D4537 0%, #156550 100%)' },
-  { label: 'Slate Platinum', value: 'linear-gradient(135deg, #334155 0%, #475569 100%)' },
-  { label: 'Royal Indigo', value: 'linear-gradient(135deg, #2E1065 0%, #4C1D95 100%)' },
-  { label: 'Bronze Titanium', value: 'linear-gradient(135deg, #451A03 0%, #78350F 100%)' },
+  { label: 'Sapphire Navy', value: 'var(--navy-900)' },
+  { label: 'Matte Obsidian', value: '#18191B' },
+  { label: 'Emerald Reserve', value: '#0D4537' },
+  { label: 'Slate Platinum', value: '#334155' },
+  { label: 'Royal Indigo', value: '#2E1065' },
+  { label: 'Bronze Titanium', value: '#451A03' },
 ];
 
 export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDeleteCard }) => {
@@ -28,11 +28,13 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
   const [annualFee, setAnnualFee] = useState(0);
   const [creditLimit, setCreditLimit] = useState(10000);
   const [notes, setNotes] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setError(null);
     try {
       await onAddCard({
         name,
@@ -47,6 +49,8 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
       setIsModalOpen(false);
       setName('');
       setNotes('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to save. Please retry.');
     } finally {
       setSubmitting(false);
     }
@@ -54,6 +58,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {error && !isModalOpen && <p role="alert" style={{ color: 'var(--status-danger)' }}>{error}</p>}
       {/* Section Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
         <div>
@@ -89,7 +94,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
       >
         <ShieldCheck size={16} color="var(--emerald-500)" style={{ flexShrink: 0 }} />
         <span>
-          <strong>Zero Financial Credentials Stored:</strong> CardWise operates strictly using reward rules, spending caps, and tokenized card labels. Real account numbers, PINs, and CVVs are never handled.
+          <strong>Zero Financial Credentials Stored:</strong> CardWise stores card labels and configured demo rates; spending caps are not enforced. Labels are not payment tokens. Real account numbers, PINs, and CVVs are never handled.
         </span>
       </div>
 
@@ -128,11 +133,6 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
                 <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.04em' }}>
                   {card.network}
                 </span>
-              </div>
-
-              {/* Middle Row: Metallic Chip */}
-              <div>
-                <div className="fintech-chip-metal" />
               </div>
 
               {/* Bottom Row: Card Product Name & Masked Account */}
@@ -179,7 +179,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
                       </span>
                     ))
                   ) : (
-                    <span className="badge badge-slate" style={{ fontSize: 11 }}>1.5% Base</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>No rules configured (0% estimate)</span>
                   )}
                 </div>
               </div>
@@ -193,7 +193,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
               <button
                 onClick={() => {
                   if (confirm(`Remove ${card.name} from your card portfolio?`)) {
-                    onDeleteCard(card.id);
+                    onDeleteCard(card.id).catch(err => setError(err instanceof Error ? err.message : 'Unable to delete card.'));
                   }
                 }}
                 className="btn btn-danger-ghost"
@@ -228,6 +228,7 @@ export const CardManager: React.FC<CardManagerProps> = ({ cards, onAddCard, onDe
             </div>
 
             <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {error && <p role="alert" style={{ color: 'var(--status-danger)' }}>{error}</p>}
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                   Card Product Name

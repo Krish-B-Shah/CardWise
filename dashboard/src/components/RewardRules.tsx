@@ -33,11 +33,13 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
   const [ratePercent, setRatePercent] = useState(3.0);
   const [capAmount, setCapAmount] = useState<string>('');
   const [description, setDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setError(null);
     try {
       await onAddRule({
         card_id: selectedCardId || cards[0]?.id,
@@ -49,6 +51,8 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
       setIsModalOpen(false);
       setDescription('');
       setCapAmount('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to save. Please retry.');
     } finally {
       setSubmitting(false);
     }
@@ -56,14 +60,15 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {error && !isModalOpen && <p role="alert" style={{ color: 'var(--status-danger)' }}>{error}</p>}
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
         <div>
           <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-            Reward Rules & Category Multipliers
+            Category rates
           </h2>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '3px 0 0 0' }}>
-            Configure merchant category cashback rates and annual spending caps ({rules.length} active rules)
+            Configured demo cashback rates; cap metadata is not enforced ({rules.length} active rules)
           </p>
         </div>
         <button
@@ -75,7 +80,7 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
           disabled={cards.length === 0}
         >
           <Plus size={15} />
-          <span>New Multiplier Rule</span>
+          <span>Add rule</span>
         </button>
       </div>
 
@@ -87,8 +92,8 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
               <tr style={{ background: 'var(--bg-surface-subtle)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
                 <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Card</th>
                 <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Category</th>
-                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Cashback Multiplier</th>
-                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Spend Cap</th>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Cashback rate</th>
+                <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Cap metadata (not enforced)</th>
                 <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Rule Description</th>
                 <th style={{ padding: '12px 18px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Action</th>
               </tr>
@@ -118,7 +123,7 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
                       </span>
                     </td>
                     <td className="tabular-nums" style={{ padding: '14px 18px', color: 'var(--text-secondary)' }}>
-                      {rule.cap_amount ? `$${rule.cap_amount.toLocaleString()}/yr` : 'No Cap'}
+                      {rule.cap_amount ? `${rule.cap_amount.toLocaleString()} (not enforced)` : 'Not specified'}
                     </td>
                     <td style={{ padding: '14px 18px', color: 'var(--text-secondary)', maxWidth: 300 }}>
                       {rule.description || '—'}
@@ -127,7 +132,7 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
                       <button
                         onClick={() => {
                           if (confirm('Delete this reward rule?')) {
-                            onDeleteRule(rule.id);
+                            onDeleteRule(rule.id).catch(err => setError(err instanceof Error ? err.message : 'Unable to delete rule.'));
                           }
                         }}
                         className="btn btn-danger-ghost"
@@ -153,7 +158,7 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Sliders size={18} color="var(--emerald-500)" />
                 <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                  Configure Category Multiplier
+                  Add category rate
                 </h3>
               </div>
               <button
@@ -165,6 +170,7 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
             </div>
 
             <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {error && <p role="alert" style={{ color: 'var(--status-danger)' }}>{error}</p>}
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                   Select Credit Card
@@ -225,7 +231,7 @@ export const RewardRules: React.FC<RewardRulesProps> = ({
 
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                    Annual Spend Cap ($) (Optional)
+                    Cap metadata ($), not enforced (optional)
                   </label>
                   <input
                     type="number"

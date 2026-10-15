@@ -25,9 +25,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = [
     { id: 'analytics', label: 'Analytics', icon: BarChart2, badge: null },
     { id: 'cards', label: 'Cards', icon: CreditCard, badge: cardsCount.toString() },
-    { id: 'rules', label: 'Reward Multipliers', icon: Percent, badge: null },
+    { id: 'rules', label: 'Reward Rules', icon: Percent, badge: null },
     { id: 'transactions', label: 'Transactions & Gap', icon: Receipt, badge: null },
-    { id: 'optimizer', label: 'Reward Optimizer', icon: Sparkles, badge: 'Smart' },
+    { id: 'optimizer', label: 'Reward Optimizer', icon: Sparkles, badge: null },
   ];
 
   return (
@@ -70,9 +70,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <span style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Personal Wallet
-          </span>
-          <span className="badge badge-emerald" style={{ fontSize: 10, padding: '2px 6px' }}>
-            Active
           </span>
         </div>
 
@@ -182,7 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               width: 30,
               height: 30,
               borderRadius: 6,
-              background: 'linear-gradient(135deg, #1B3554, #24446A)',
+              background: 'var(--navy-800)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
